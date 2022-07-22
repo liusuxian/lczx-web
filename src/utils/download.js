@@ -45,7 +45,6 @@ export function downloadByUrl(url, fileName, downloadType) {
       })
     }
     FileSaver.saveAs(file, getDownloadName(url, fileName))
-    Message.success('文件下载成功!!!')
   }).catch((e) => {
     Message.error('该文件无法下载!!!')
   })
