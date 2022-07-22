@@ -48,3 +48,11 @@ export function chooseExcellence(data) {
     data
   })
 }
+
+export function downloadReport(data) {
+  return request({
+    url: 'wdk/report/download',
+    method: 'get',
+    params: data
+  })
+}

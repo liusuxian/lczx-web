@@ -155,6 +155,10 @@
 <script>
 // 这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
 // 例如：import 《组件名称》 from '《组件路径》';
+import downLoadNotice from '/src/components/downLoadNotice/index.vue'
+import {
+  downloadByUrl
+} from '@/utils/download'
 import {
   deepClone
 } from '@/utils'
@@ -164,15 +168,16 @@ import {
 import {
   getClientOptions,
   getReportList,
-  chooseExcellence
+  chooseExcellence,
+  downloadReport
 } from '@/api/wdk_report'
-import {
-  downloadFile
-} from '@/api/download'
 
 export default {
   // import引⼊的组件需要注⼊到对象中才能使⽤
   components: {},
+  mixins: [
+    downLoadNotice
+  ],
   // 属性
   props: {},
   // 数据
@@ -365,32 +370,9 @@ export default {
     },
     // 下载
     handleDownload(val) {
-      downloadFile({ filePath: val.report.originUrl }).then((res) => {
-        // 创建a标签
-        const aLink = document.createElement('a')
-        // 兼容不同浏览器的url对象
-        const URL = window.URL || window.webkitURL || window.moxURL
-        aLink.href = URL.createObjectURL(res.data)
-        // 将创建的a标签添加到body中
-        document.body.appendChild(aLink)
-        // 获取文件名
-        var filename = res.headers['content-disposition'].split('attachment;filename=')[1]
-        aLink.download = decodeURIComponent(filename)
-        aLink.click()
-        // 移除aLink节点
-        document.body.removeChild(aLink)
-        // 销毁url对象
-        URL.revokeObjectURL(aLink.href)
-        this.$message({
-          type: 'success',
-          message: '下载报告文件成功!!!'
-        })
-      }).catch(() => {
-        this.$message({
-          type: 'error',
-          message: '下载报告文件失败!!!'
-        })
-      })
+      downloadReport({ filePath: val.report.originUrl }).then((res) => {
+        downloadByUrl(res.data.fileUrl, val.report.name)
+      }).catch(() => { })
     }
   }
 }
