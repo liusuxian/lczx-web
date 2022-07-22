@@ -17,7 +17,8 @@ export default {
   data() {
     // 这⾥存放数据
     return {
-      notify: {} // 用来维护下载文件进度弹框对象
+      notify: {}, // 用来维护下载文件进度弹框对象
+      progress: 0
     }
   },
   // 计算属性类似于data概念
@@ -34,9 +35,11 @@ export default {
         const data = JSON.parse(JSON.stringify(n))
         data.forEach(item => {
           const domList = [...document.getElementsByClassName(item.path)]
+          const tmpProgressList = [...document.getElementsByClassName('progress' + item.path)]
           if (domList.find(i => i.className === item.path)) {
             // 如果页面已经有该进度对象的弹框，则更新它的进度progress
             domList.find(i => i.className === item.path).innerHTML = item.progress + '%'
+            tmpProgressList.find(i => i.className === ('progress' + item.path)).value = item.progress
           } else {
             if (item.progress === null) {
               // 此处容错处理，如果后端传输文件流报错，删除当前进度对象
@@ -45,14 +48,32 @@ export default {
             }
             // 如果页面中没有该进度对象所对应的弹框，页面新建弹框，并在notify中加入该弹框对象，属性名为该进度对象的path(上文可知path是唯一的)，属性值为$notify(element ui中的通知组件)弹框对象
             this.notify[item.path] = this.$notify({
-              title: item.fileName,
               dangerouslyUseHTMLString: true,
-              message: `<p style="width: 100px;">正在下载<span class="${item.path}" style="float: right">${item.progress}%</span></p>`, // 显示下载百分比，类名为进度对象的path(便于后面更新进度百分比)
-              showClose: false,
-              duration: 0
+              message: `<p style="margin-top:-4px;padding-left: 3px;">
+                  <span style="font-size: 10px;">${item.fileName}</span><br/>
+                  <div style="display: flex;">
+                    <p style="padding: 3px 0 0 6px;"><progress class="${'progress' + item.path}" style="width: 228px;" max="100" value="${item.progress}"></progress></p>
+                    <span class="${item.path}" style="margin-left: 10px;">${item.progress}%</span>
+                  </div>
+                </p>
+                `, // 显示下载百分比，类名为进度对象的path(便于后面更新进度百分比)   这里无法实现响应式，通过获取Dom去更新值的改变
+              showClose: true,
+              duration: 0,
+              onClose: (e) => {
+                if (this.progress !== 100) {
+                  if (e.$cancelList.length) {
+                    // 取消当前接口请求
+                    e.$cancelList.find(n => n.url === item.url).cancel.cancel('cancel')
+                    // 删除全局list当前接口token值
+                    e.$cancelList.splice(e.$cancelList.findIndex(i => i.url === item.url), 1)
+                  }
+                  this.$store.dispatch('download/delProgress', item.path)
+                }
+              }
             })
           }
 
+          this.progress = item.progress
           if (item.progress === 100) {
             // 如果下载进度到了100%，关闭该弹框，并删除notify中维护的弹框对象
             this.notify[item.path].close()
@@ -62,6 +83,8 @@ export default {
             }, 1000)
             // 删除download中state的progressList中的进度对象
             this.$store.dispatch('download/delProgress', item.path)
+            // 删除全局list当前接口token值
+            this.$cancelList.splice(this.$cancelList.findIndex(i => i.url === item.url), 1)
           }
         })
       },
