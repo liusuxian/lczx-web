@@ -44,7 +44,7 @@ export default {
               return
             }
             // 如果页面中没有该进度对象所对应的弹框，页面新建弹框，并在notify中加入该弹框对象，属性名为该进度对象的path(上文可知path是唯一的)，属性值为$notify(element ui中的通知组件)弹框对象
-            this.notify[item.path] = this.$notify.success({
+            this.notify[item.path] = this.$notify({
               title: item.fileName,
               dangerouslyUseHTMLString: true,
               message: `<p style="width: 100px;">正在下载<span class="${item.path}" style="float: right">${item.progress}%</span></p>`, // 显示下载百分比，类名为进度对象的path(便于后面更新进度百分比)
