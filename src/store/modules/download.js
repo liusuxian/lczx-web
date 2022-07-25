@@ -9,6 +9,7 @@ const mutations = {
     var index = state.progressList.findIndex(item => item.path === progressObj.path)
     if (index !== -1) {
       state.progressList[index].progress = progressObj.progress
+      state.progressList[index].progressDetail = progressObj.progressDetail
     } else {
       state.progressList.push(progressObj)
     }

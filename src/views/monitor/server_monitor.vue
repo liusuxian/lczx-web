@@ -238,34 +238,34 @@ export default {
     memorySizeFormat(size) {
       size = parseFloat(size)
       let rank = 0
-      let rankchar = 'Bytes'
-      while (size > 1024 && rankchar !== 'GB') {
+      let rankChar = 'Bytes'
+      while (size > 1024 && rankChar !== 'GB') {
         size = size / 1024
         rank++
         if (rank === 1) {
-          rankchar = 'KB'
+          rankChar = 'KB'
         } else if (rank === 2) {
-          rankchar = 'MB'
+          rankChar = 'MB'
         } else if (rank === 3) {
-          rankchar = 'GB'
+          rankChar = 'GB'
         }
       }
-      return size.toFixed(2) + ' ' + rankchar
+      return size.toFixed(2) + ' ' + rankChar
     },
     timeFormat(second) {
       second = parseFloat(second)
       let rank = 0
-      let rankchar = '秒'
-      while (second > 60 && rankchar !== '小时') {
+      let rankChar = '秒'
+      while (second > 60 && rankChar !== '小时') {
         second = second / 60
         rank++
         if (rank === 1) {
-          rankchar = '分'
+          rankChar = '分'
         } else if (rank === 2) {
-          rankchar = '小时'
+          rankChar = '小时'
         }
       }
-      return second.toFixed(2) + ' ' + rankchar
+      return second.toFixed(2) + ' ' + rankChar
     }
   }
 }
