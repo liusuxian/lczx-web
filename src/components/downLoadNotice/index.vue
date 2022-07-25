@@ -51,13 +51,13 @@ export default {
             // 如果页面中没有该进度对象所对应的弹框，页面新建弹框，并在notify中加入该弹框对象，属性名为该进度对象的path(上文可知path是唯一的)，属性值为$notify(element ui中的通知组件)弹框对象
             this.notify[item.path] = this.$notify({
               dangerouslyUseHTMLString: true,
-              message: `<p style="margin-top:-4px;padding-left: 3px;">
-                  <span style="font-size: 10px;">${item.fileName}</span><br/>
-                  <div style="display: flex;">
-                    <p style="padding: 3px 0 0 6px;"><progress class="${'progress' + item.path}" style="width: 228px;" max="100" value="${item.progress}"></progress></p>
+              message: `<p style="margin-top: -4px; margin-left: -13px;">
+                  <span style="font-size: 16px;">${item.fileName}</span><br/>
+                  <div style="display: flex; margin-left: -13px;">
+                    <p style="padding-top: 3px;"><progress class="${'progress' + item.path}" style="width: 260px;" max="100" value="${item.progress}"></progress></p>
                     <span class="${item.path}" style="margin-left: 10px;">${item.progress}%</span>
                   </div>
-                  <span class="${'progressDetail' + item.path}" style="font-size: 10px;">${item.progressDetail}</span>
+                  <span style="font-size: 10px; margin-left: -13px;" class="${'progressDetail' + item.path}">${item.progressDetail}</span>
                 </p>
                 `, // 显示下载百分比，类名为进度对象的path(便于后面更新进度百分比)这里无法实现响应式，通过获取Dom去更新值的改变
               showClose: true,
