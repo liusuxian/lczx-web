@@ -36,10 +36,12 @@ export default {
         data.forEach(item => {
           const domList = [...document.getElementsByClassName(item.path)]
           const tmpProgressList = [...document.getElementsByClassName('progress' + item.path)]
+          const tmpProgressDetailList = [...document.getElementsByClassName('progressDetail' + item.path)]
           if (domList.find(i => i.className === item.path)) {
             // 如果页面已经有该进度对象的弹框，则更新它的进度progress
             domList.find(i => i.className === item.path).innerHTML = item.progress + '%'
             tmpProgressList.find(i => i.className === ('progress' + item.path)).value = item.progress
+            tmpProgressDetailList.find(i => i.className === ('progressDetail' + item.path)).innerHTML = item.progressDetail
           } else {
             if (item.progress === null) {
               // 此处容错处理，如果后端传输文件流报错，删除当前进度对象
@@ -55,8 +57,9 @@ export default {
                     <p style="padding: 3px 0 0 6px;"><progress class="${'progress' + item.path}" style="width: 228px;" max="100" value="${item.progress}"></progress></p>
                     <span class="${item.path}" style="margin-left: 10px;">${item.progress}%</span>
                   </div>
+                  <span class="${'progressDetail' + item.path}" style="font-size: 10px;">${item.progressDetail}</span>
                 </p>
-                `, // 显示下载百分比，类名为进度对象的path(便于后面更新进度百分比)   这里无法实现响应式，通过获取Dom去更新值的改变
+                `, // 显示下载百分比，类名为进度对象的path(便于后面更新进度百分比)这里无法实现响应式，通过获取Dom去更新值的改变
               showClose: true,
               duration: 0,
               onClose: (e) => {
