@@ -52,7 +52,7 @@ export default {
             this.notify[item.path] = this.$notify({
               dangerouslyUseHTMLString: true,
               message: `<p style="margin-top: -4px; margin-left: -13px;">
-                  <span style="font-size: 16px;">${item.fileName}</span><br/>
+                  <span style="font-size: 14px;">${item.fileName}</span><br/>
                   <div style="display: flex; margin-left: -13px;">
                     <p style="padding-top: 3px;"><progress class="${'progress' + item.path}" style="width: 260px;" max="100" value="${item.progress}"></progress></p>
                     <span class="${item.path}" style="margin-left: 10px;">${item.progress}%</span>
