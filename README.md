@@ -49,3 +49,14 @@ npm run lint
 # 代码格式检查并自动修复
 npm run lint -- --fix
 ```
+## 第三方插件
+```bash
+# 安装StreamSaver
+npm install streamsaver
+
+# 安装vue-treeselect
+npm install --save @riophae/vue-treeselect
+
+# 安装element-china-area-data
+npm install element-china-area-data -S
+```
