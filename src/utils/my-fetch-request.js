@@ -17,7 +17,6 @@ myFetch.interceptors.request.use(
         'Authorization': 'Bearer ' + getToken()
       }
     }
-    console.log('myFetch request: ', config)
     return config
   }
 )
@@ -25,7 +24,6 @@ myFetch.interceptors.request.use(
 // response interceptor
 myFetch.interceptors.response.use(
   response => {
-    console.log('myFetch response: ', response)
     if (response.status !== 200) {
       Message({
         message: response.statusText || 'Error',

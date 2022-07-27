@@ -13,7 +13,6 @@ export function myFetch(input, init = {}) {
   if (!(/^(https?:|http?:)/.test(input))) {
     input = process.env.VUE_APP_BASE_API + input
   }
-  console.log('myFetch input: ', input)
   // fetch默认请求方式设为GET
   if (!init.method) {
     init.method = 'GET'
