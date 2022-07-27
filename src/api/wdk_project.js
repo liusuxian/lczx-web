@@ -1,5 +1,5 @@
 import request from '@/utils/request'
-import blobRequest from '@/utils/blob-request'
+import myFetchRequest from '@/utils/my-fetch-request'
 
 export function getClientOptions() {
   return request({
@@ -49,10 +49,7 @@ export function deleteProject(data) {
 }
 
 export function getExportProject(data) {
-  return blobRequest({
-    url: 'wdk/project/export',
-    responseType: 'blob',
-    method: 'get',
-    params: data
+  return myFetchRequest('wdk/project/export', {
+    body: data
   })
 }

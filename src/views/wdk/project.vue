@@ -471,6 +471,9 @@
 import Treeselect from '@riophae/vue-treeselect'
 import '@riophae/vue-treeselect/dist/vue-treeselect.css'
 import {
+  downloadByRes
+} from '@/utils/download'
+import {
   deepClone
 } from '@/utils'
 import {
@@ -956,31 +959,8 @@ export default {
       this.$refs.projectForm.validate(valid => {
         if (valid) {
           getExportProject(this.projectForm).then((res) => {
-            // 创建a标签
-            const aLink = document.createElement('a')
-            // 兼容不同浏览器的url对象
-            const URL = window.URL || window.webkitURL || window.moxURL
-            aLink.href = URL.createObjectURL(res.data)
-            // 将创建的a标签添加到body中
-            document.body.appendChild(aLink)
-            // 获取文件名
-            var filename = res.headers['content-disposition'].split('attachment;filename=')[1]
-            aLink.download = decodeURIComponent(filename)
-            aLink.click()
-            // 移除aLink节点
-            document.body.removeChild(aLink)
-            // 销毁url对象
-            URL.revokeObjectURL(aLink.href)
-            this.$message({
-              type: 'success',
-              message: '导出项目成功!!!'
-            })
-          }).catch(() => {
-            this.$message({
-              type: 'error',
-              message: '导出项目失败!!!'
-            })
-          })
+            downloadByRes(res)
+          }).catch(() => { })
         } else {
           console.log('error submit!!')
           return false

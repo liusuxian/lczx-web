@@ -1,3 +1,4 @@
+import Vue from 'vue'
 import qs from 'qs'
 const interceptors_req = []
 const interceptors_res = []
@@ -32,10 +33,10 @@ export function myFetch(input, init = {}) {
       const value = init.body[key]
       if (Array.isArray(value)) {
         if (value.length > 0) {
-          dataStr += qs.stringify({
-            key: value
-          }, {
-            arrayFormat: 'indices'
+          const obj = {}
+          Vue.set(obj, key, value)
+          dataStr += qs.stringify(obj, {
+            arrayFormat: 'brackets'
           }) + '&'
         }
       } else if (value) {
