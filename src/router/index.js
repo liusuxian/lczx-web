@@ -326,6 +326,25 @@ export const asyncRoutes = [{
   }
   ]
 },
+{
+  path: '/greendisk',
+  component: Layout,
+  redirect: '',
+  name: 'GreenDisk',
+  meta: {
+    menu: 'greendisk'
+  },
+  children: [{
+    path: '/manager',
+    component: () => import('@/views/greendisk/index'),
+    name: 'GreenDiskManager',
+    meta: {
+      title: '绿盘',
+      icon: 'network_disk',
+      menu: 'greendisk/manager/fileList'
+    }
+  }]
+},
 // 404 page must be placed at the end !!!
 {
   path: '*',
