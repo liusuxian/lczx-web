@@ -59,10 +59,4 @@ npm install --save @riophae/vue-treeselect
 
 # 安装element-china-area-data
 npm install element-china-area-data -S
-
-# 安装wl-vue-select
-npm i wl-vue-select -S
-
-# 安装wl-explorer
-npm i wl-explorer -S
 ```

@@ -19,13 +19,6 @@ import './utils/error-log' // error log
 
 import * as filters from './filters' // global filters
 
-import wlVueSelect from 'wl-vue-select'
-import 'wl-vue-select/lib/wl-vue-select.css'
-Vue.use(wlVueSelect)
-import wlExplorer from 'wl-explorer'
-import 'wl-explorer/lib/wl-explorer.css'
-Vue.use(wlExplorer)
-
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })
