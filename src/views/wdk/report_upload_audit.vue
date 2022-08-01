@@ -152,7 +152,7 @@ export default {
   methods: {
     // 表头
     tableHeaderCellStyle() {
-      return 'color:#606266;background:#F2F6FC'
+      return 'color: #606266; background: #F2F6FC;'
     },
     // 获取文档库报告上传审核列表
     handleGetReportUploadAuditList() {

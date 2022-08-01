@@ -191,7 +191,7 @@ export default {
   methods: {
     // 表头
     tableHeaderCellStyle() {
-      return 'color:#606266;background:#F2F6FC'
+      return 'color: #606266; background: #F2F6FC;'
     },
     // 通过姓名搜索用户
     auditRemoteMethod(query) {

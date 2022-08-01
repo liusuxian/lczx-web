@@ -378,7 +378,7 @@ export default {
   methods: {
     // 表头
     tableHeaderCellStyle() {
-      return 'color:#606266;background:#F2F6FC'
+      return 'color: #606266; background: #F2F6FC;'
     },
     // 获取角色管理客户端选项
     handleClientOptions() {
