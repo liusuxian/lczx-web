@@ -22,6 +22,10 @@ import * as filters from './filters' // global filters
 import ContextMenu from 'vue-contextmenujs'
 Vue.use(ContextMenu)
 
+import vueDragSelectPro from 'vue-drag-select-pro'
+import 'vue-drag-select-pro/lib/vueDragSelectPro.css'
+Vue.use(vueDragSelectPro)
+
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })
