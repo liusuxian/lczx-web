@@ -38,45 +38,45 @@
       </el-breadcrumb>
     </div>
     <!-- 列表展示区域 -->
-    <el-table
-      v-show="showType === 'list'"
-      class="file-list-wrapper"
-      :data="fileList"
-      :header-cell-style="tableHeaderCellStyle"
-      tooltip-effect="light"
-      @selection-change="handleSelectionChange"
-      @row-contextmenu="onContextMenu"
-    >
-      <el-table-column align="center" type="selection" width="50" />
-      <el-table-column align="center" label="文件名" :show-overflow-tooltip="true" width="300">
-        <template slot-scope="scope">
-          <div class="file-list-name-item">
-            <el-image style="width: 30px; height: 30px;" :src="getFileImg(scope.row.type)" fit="cover" />
-            <div class="file-list-name">{{ scope.row.name }}</div>
-          </div>
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="大小" width="120">
-        <template slot-scope="scope">
-          {{ fileSizeFormat(scope.row.size) }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="类型" width="120">
-        <template slot-scope="scope">
-          {{ getFileType(scope.row.type) }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="修改时间" width="200">
-        <template slot-scope="scope">
-          {{ scope.row.updatedAt }}
-        </template>
-      </el-table-column>
-      <el-table-column align="center" label="备注">
-        <template slot-scope="scope">
-          {{ scope.row.remark }}
-        </template>
-      </el-table-column>
-    </el-table>
+    <div v-show="showType === 'list'" class="file-list-wrapper">
+      <el-table
+        :data="fileList"
+        :header-cell-style="tableHeaderCellStyle"
+        tooltip-effect="light"
+        @selection-change="handleSelectionChange"
+        @row-contextmenu="onContextMenu"
+      >
+        <el-table-column align="center" type="selection" width="50" />
+        <el-table-column align="left" label="文件名" :show-overflow-tooltip="true" width="300">
+          <template slot-scope="scope">
+            <div class="file-list-item">
+              <el-image class="file-list-img" :src="getFileImg(scope.row.type)" fit="cover" />
+              <div class="file-list-name">{{ scope.row.name }}</div>
+            </div>
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="大小" width="120">
+          <template slot-scope="scope">
+            {{ fileSizeFormat(scope.row.size) }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="类型" width="120">
+          <template slot-scope="scope">
+            {{ getFileType(scope.row.type) }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="修改时间" width="200">
+          <template slot-scope="scope">
+            {{ scope.row.updatedAt }}
+          </template>
+        </el-table-column>
+        <el-table-column align="center" label="备注">
+          <template slot-scope="scope">
+            {{ scope.row.remark }}
+          </template>
+        </el-table-column>
+      </el-table>
+    </div>
     <!-- 网格展示区域 -->
     <div v-show="showType === 'grid'" class="file-grid-wrapper">
       <div class="file-grid-head">
@@ -140,8 +140,7 @@ export default {
   data() {
     // 这⾥存放数据
     return {
-      // showType: 'list', // 展现形式
-      showType: 'grid', // 展现形式
+      showType: 'list', // 展现形式
       searchName: '', // 搜索文件或文件夹名称
       pathList: [
         {
@@ -403,29 +402,42 @@ export default {
 }
 
 .file-list-wrapper {
-  width: 100%;
+  width: calc(100% - 40px);
+  margin-left: 20px;
   margin-top: 20px;
 }
 
-.file-list-name-item {
+.file-list-item {
   display: flex;
-  justify-content: center;
+  justify-content: flex-start;
   align-items: center;
+}
+
+.file-list-img {
+  width: 30px;
+  height: 30px;
 }
 
 .file-list-name {
   margin-left: 10px;
   cursor: pointer;
+  font-size: 14px;
+  font-family: "微软雅黑";
+  width: 240px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .file-grid-wrapper {
-  margin-top: 10px;
+  margin-top: 20px;
 }
 
 .file-grid-wrapper::after {
   content: '';
   position: absolute;
-  width: calc(100% - 40px);
+  left: 40px;
+  width: calc(100% - 80px);
   height: 1px;
   background-color: #DCDFE6;
 }
