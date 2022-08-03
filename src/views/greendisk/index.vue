@@ -30,12 +30,17 @@
     </div>
     <!-- 当前位置区域 -->
     <div class="breadcrumb-wrapper">
-      <div class="breadcrumb-title">当前位置：</div>
-      <el-breadcrumb separator="/">
-        <el-breadcrumb-item v-for="(item, index) in pathList" :key="index" :to="{ query: { pid: item.id } }">
-          {{ item.name }}
-        </el-breadcrumb-item>
-      </el-breadcrumb>
+      <div style="display: flex; align-items: center;">
+        <span class="breadcrumb-title">当前位置：</span>
+        <el-breadcrumb separator="/">
+          <el-breadcrumb-item v-for="(item, index) in pathList" :key="index" :to="{ query: { pid: item.id } }">
+            {{ item.name }}
+          </el-breadcrumb-item>
+        </el-breadcrumb>
+      </div>
+      <span v-show="multipleSelection.length > 0 || fileGridSelectList.length > 0" class="file-select-tips">
+        已选中{{ multipleSelection.length || fileGridSelectList.length }}个文件/文件夹
+      </span>
     </div>
     <!-- 列表展示区域 -->
     <div v-show="showType === 'list'" class="file-list-wrapper">
@@ -82,14 +87,15 @@
     </div>
     <!-- 网格展示区域 -->
     <div v-show="showType === 'grid'" class="file-grid-wrapper">
-      <div class="file-grid-head">
-        <el-checkbox :true-label="1" :false-label="0" @change="handleCheckChange">
-          全部文件
-        </el-checkbox>
-        <span v-show="fileGridSelectList.length > 0" class="file-grid-tips">
-          已选中{{ fileGridSelectList.length }}个文件/文件夹
-        </span>
-      </div>
+      <el-checkbox
+        v-model="selectAllFile"
+        style="margin-left: 20px;"
+        :true-label="1"
+        :false-label="0"
+        @change="handleCheckChange"
+      >
+        全部文件
+      </el-checkbox>
       <vue-drag-select
         ref="dragSelect"
         v-model="fileGridSelectList"
@@ -144,6 +150,7 @@ export default {
     // 这⾥存放数据
     return {
       showType: 'list', // 展现形式
+      selectAllFile: 0, // 是否选择全部文件
       searchName: '', // 搜索文件或文件夹名称
       pathList: [
         {
@@ -426,6 +433,12 @@ export default {
     },
     // 文件网格是否被选中
     isFileGridSelect(val) {
+      if (this.fileGridSelectList.length === 0) {
+        if (this.selectAllFile === 1) {
+          this.selectAllFile = 0
+        }
+        return false
+      }
       var index = this.fileGridSelectList.findIndex(item => item.id === val.id)
       return index !== -1
     },
@@ -501,13 +514,14 @@ export default {
 .breadcrumb-wrapper {
   display: flex;
   align-items: center;
+  justify-content: space-between;
   margin-left: 20px;
 }
 
 .breadcrumb-title {
-  height: 30px;
-  line-height: 30px;
+  font-size: 14px;
   font-family: "微软雅黑";
+  padding-bottom: 2px;
 }
 
 .file-list-wrapper {
@@ -541,17 +555,6 @@ export default {
 
 .file-grid-wrapper {
   margin-top: 20px;
-}
-
-.file-grid-head {
-  display: flex;
-  justify-content: space-between;
-  margin-left: 20px;
-}
-
-.file-grid-tips {
-  font-size: 14px;
-  color: #606266;
 }
 
 ::v-deep {
@@ -621,6 +624,12 @@ export default {
 .file-grid-name-select {
   color: white;
   background-color: #1FA9FC;
+}
+
+.file-select-tips {
+  font-size: 14px;
+  color: #606266;
+  margin-right: 20px;
 }
 
 .bottom-pagination-wrapper {
