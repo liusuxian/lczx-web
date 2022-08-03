@@ -46,16 +46,17 @@
     <div v-show="showType === 'list'" class="file-list-wrapper">
       <el-table
         id="file-list-table"
-        height="450"
+        height="calc(100% - 10px)"
         tooltip-effect="light"
         :data="fileList"
         :row-style="tableRowStyle"
         :header-cell-style="tableHeaderCellStyle"
+        :default-sort="{ prop: 'updatedAt', order: 'descending' }"
         @selection-change="handleSelectionChange"
         @row-contextmenu="onContextMenu"
       >
         <el-table-column align="center" type="selection" width="50" />
-        <el-table-column align="left" label="文件名" :show-overflow-tooltip="true" width="300">
+        <el-table-column align="left" prop="name" label="文件名" sortable :show-overflow-tooltip="true" width="300">
           <template slot-scope="scope">
             <div class="file-list-item">
               <el-image class="file-list-img" :src="getFileImg(scope.row.type)" fit="cover" />
@@ -63,17 +64,17 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="大小" width="160">
+        <el-table-column align="center" prop="size" label="大小" sortable width="160">
           <template slot-scope="scope">
             {{ fileSizeFormat(scope.row.size) }}
           </template>
         </el-table-column>
-        <el-table-column align="center" label="类型" width="160">
+        <el-table-column align="center" prop="type" label="类型" sortable width="160">
           <template slot-scope="scope">
             {{ getFileType(scope.row.type) }}
           </template>
         </el-table-column>
-        <el-table-column align="center" sortable label="修改时间" width="200">
+        <el-table-column align="center" prop="updatedAt" label="修改时间" sortable width="200">
           <template slot-scope="scope">
             {{ scope.row.updatedAt }}
           </template>
@@ -166,56 +167,56 @@ export default {
         {
           id: 2,
           name: '联盟公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54001,
+          updatedAt: '2022-07-29 16:00:01'
         },
         {
           id: 3,
           name: '未来社区公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54002,
+          updatedAt: '2022-07-29 16:00:02'
         },
         {
           id: 4,
           name: '未来社区公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54003,
+          updatedAt: '2022-07-29 16:00:03'
         },
         {
           id: 5,
           name: '未来社区公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54004,
+          updatedAt: '2022-07-29 16:00:04'
         },
         {
           id: 6,
           name: '未来社区公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54005,
+          updatedAt: '2022-07-29 16:00:05'
         },
         {
           id: 7,
           name: '未来社区公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54006,
+          updatedAt: '2022-07-29 16:00:06'
         },
         {
           id: 8,
           name: '未来社区公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54007,
+          updatedAt: '2022-07-29 16:00:07'
         },
         {
           id: 9,
           name: '未来社区公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54008,
+          updatedAt: '2022-07-29 16:00:08'
         },
         {
           id: 10,
           name: '未来社区公司',
-          size: 54000,
-          updatedAt: '2022-07-29 16:00:00'
+          size: 54009,
+          updatedAt: '2022-07-29 16:00:09'
         }
       ], // 文件列表
       multipleSelection: [],
