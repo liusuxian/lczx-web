@@ -73,7 +73,7 @@
             {{ getFileType(scope.row.type) }}
           </template>
         </el-table-column>
-        <el-table-column align="center" label="修改时间" width="200">
+        <el-table-column align="center" sortable label="修改时间" width="200">
           <template slot-scope="scope">
             {{ scope.row.updatedAt }}
           </template>
@@ -87,13 +87,7 @@
     </div>
     <!-- 网格展示区域 -->
     <div v-show="showType === 'grid'" class="file-grid-wrapper">
-      <el-checkbox
-        v-model="selectAllFile"
-        style="margin-left: 20px;"
-        :true-label="1"
-        :false-label="0"
-        @change="handleCheckChange"
-      >
+      <el-checkbox v-model="selectAllFile" style="margin-left: 20px;" @change="handleCheckChange">
         全部文件
       </el-checkbox>
       <vue-drag-select
@@ -150,7 +144,7 @@ export default {
     // 这⾥存放数据
     return {
       showType: 'list', // 展现形式
-      selectAllFile: 0, // 是否选择全部文件
+      selectAllFile: false, // 是否选择全部文件
       searchName: '', // 搜索文件或文件夹名称
       pathList: [
         {
@@ -434,8 +428,8 @@ export default {
     // 文件网格是否被选中
     isFileGridSelect(val) {
       if (this.fileGridSelectList.length === 0) {
-        if (this.selectAllFile === 1) {
-          this.selectAllFile = 0
+        if (this.selectAllFile) {
+          this.selectAllFile = false
         }
         return false
       }
@@ -444,9 +438,9 @@ export default {
     },
     // 选择/取消所有文件
     handleCheckChange(val) {
-      if (val === 1) {
+      if (val) {
         this.fileGridSelectList = this.fileList
-      } else if (val === 0) {
+      } else {
         this.fileGridSelectList = []
       }
     }

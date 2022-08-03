@@ -6,29 +6,28 @@
         <div v-for="(item, index) in stepReportList" :key="index" class="report_item">
           <div class="report_subitem">
             <span style="color: #606266; margin-left: 10px; margin-right: 20px;">{{ item.typeName }}</span>
-            <div class="report_subitem_file">
-              <div v-for="(subitem, subindex) in item.reportList" :key="subindex">
+            <div class="report_subitem_files">
+              <el-checkbox-group v-model="checkList" class="report_subitem_file" @change="handleCheckChange">
                 <el-checkbox
-                  v-show="subitem.id !== 0"
+                  v-for="(subitem, subindex) in item.reportList"
+                  :key="subindex"
+                  :disabled="subitem.id === 0"
                   style="margin-left: 5px;"
-                  :true-label="subitem.id"
-                  :false-label="-subitem.id"
-                  @change="handleCheckChange"
+                  :label="subitem"
                 >
-                  {{ subitem.id }}
+                  <span v-if="subitem.id === 0" style="color: orangered; margin-left: 10px; margin-right: 10px;">
+                    {{ subitem.reportName }}
+                  </span>
+                  <el-button
+                    v-else
+                    style="margin-left: 10px; margin-right: 10px;"
+                    type="text"
+                    @click="handleView(subitem)"
+                  >
+                    {{ subitem.reportName }}
+                  </el-button>
                 </el-checkbox>
-                <span v-if="subitem.id === 0" style="color: orangered; margin-left: 10px; margin-right: 10px;">
-                  {{ subitem.reportName }}
-                </span>
-                <el-button
-                  v-else
-                  style="margin-left: 10px; margin-right: 10px;"
-                  type="text"
-                  @click="handleView(subitem)"
-                >
-                  {{ subitem.reportName }}
-                </el-button>
-              </div>
+              </el-checkbox-group>
             </div>
           </div>
         </div>
@@ -467,15 +466,7 @@ export default {
     },
     // 选择报告
     handleCheckChange(val) {
-      if (val > 0) {
-        this.checkList.push(val)
-      } else {
-        var index = this.checkList.findIndex(item => item === Math.abs(val))
-        if (index !== -1) {
-          this.checkList.splice(index, 1)
-        }
-      }
-      if (this.checkList.length > 0) {
+      if (val.length > 0) {
         this.delReportBtnDisabled = false
       } else {
         this.delReportBtnDisabled = true
@@ -483,7 +474,12 @@ export default {
     },
     // 删除报告
     handleDelete() {
-      this.$confirm('是否确认删除报告ID为"' + this.checkList.join(',') + '"的数据项?', '警告', {
+      var nameList = []
+      for (const item of this.checkList) {
+        nameList.push(item.reportName)
+      }
+      var names = nameList.join('; ')
+      this.$confirm('确认要"移除" "' + names + '" 报告吗?', '警告', {
         confirmButtonText: '确认',
         cancelButtonText: '取消',
         type: 'warning'
@@ -512,6 +508,11 @@ export default {
 }
 </script>
 
+<style lang='scss'>
+.el-checkbox__label {
+  padding: 0;
+}
+</style>
 <style lang='scss' scoped>
 .report_view {
   display: flex;
@@ -563,13 +564,16 @@ export default {
   border-radius: 5px;
 }
 
-.report_subitem_file {
-  display: flex;
-  flex-direction: column;
+.report_subitem_files {
   border: 1px solid #DCDFE6;
   border-radius: 5px;
   margin-right: 5px;
   margin-top: 5px;
   margin-bottom: 5px;
+}
+
+.report_subitem_file {
+  display: flex;
+  flex-direction: column;
 }
 </style>
