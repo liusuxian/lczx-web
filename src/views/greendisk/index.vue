@@ -1,5 +1,5 @@
 <template>
-  <div class="app-container">
+  <div id="green-disk" class="app-container" @contextmenu="onContextMenu(null, null, $event)">
     <!-- 操作按钮区域 -->
     <div class="operation-menu-wrapper">
       <div>
@@ -40,9 +40,12 @@
     <!-- 列表展示区域 -->
     <div v-show="showType === 'list'" class="file-list-wrapper">
       <el-table
-        :data="fileList"
-        :header-cell-style="tableHeaderCellStyle"
+        id="file-list-table"
+        height="450"
         tooltip-effect="light"
+        :data="fileList"
+        :row-style="tableRowStyle"
+        :header-cell-style="tableHeaderCellStyle"
         @selection-change="handleSelectionChange"
         @row-contextmenu="onContextMenu"
       >
@@ -55,12 +58,12 @@
             </div>
           </template>
         </el-table-column>
-        <el-table-column align="center" label="大小" width="120">
+        <el-table-column align="center" label="大小" width="160">
           <template slot-scope="scope">
             {{ fileSizeFormat(scope.row.size) }}
           </template>
         </el-table-column>
-        <el-table-column align="center" label="类型" width="120">
+        <el-table-column align="center" label="类型" width="160">
           <template slot-scope="scope">
             {{ getFileType(scope.row.type) }}
           </template>
@@ -94,7 +97,6 @@
         :item-width="120"
         :item-height="130"
         :item-margin="[0, 0, 0, 0]"
-        @contextmenu.prevent.native="onContextMenu(null, null, $event)"
       >
         <template v-for="(item, index) in fileList">
           <drag-select-option :key="item.id" :value="item" :item-index="index">
@@ -113,18 +115,19 @@
         </template>
       </vue-drag-select>
     </div>
-    <!-- 分页栏区域 -->
-    <el-pagination
-      style="display: flex; justify-content: center; margin-top: 20px;"
-      :current-page="fileInfo.curPage"
-      :page-sizes="[10, 20, 30, 40, 50]"
-      :page-size="fileInfo.pageSize"
-      :disabled="fileInfo.total <= fileInfo.pageSize"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="fileInfo.total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurChange"
-    />
+    <!-- 底部分页栏区域 -->
+    <div class="bottom-pagination-wrapper">
+      <el-pagination
+        :current-page="fileInfo.curPage"
+        :page-sizes="[10, 20, 30, 40, 50]"
+        :page-size="fileInfo.pageSize"
+        :disabled="fileInfo.total <= fileInfo.pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="fileInfo.total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurChange"
+      />
+    </div>
   </div>
 </template>
 
@@ -176,15 +179,53 @@ export default {
           name: '未来社区公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司公司',
           size: 54000,
           updatedAt: '2022-07-29 16:00:00'
+        },
+        {
+          id: 5,
+          name: '未来社区公司',
+          size: 54000,
+          updatedAt: '2022-07-29 16:00:00'
+        },
+        {
+          id: 6,
+          name: '未来社区公司',
+          size: 54000,
+          updatedAt: '2022-07-29 16:00:00'
+        },
+        {
+          id: 7,
+          name: '未来社区公司',
+          size: 54000,
+          updatedAt: '2022-07-29 16:00:00'
+        },
+        {
+          id: 8,
+          name: '未来社区公司',
+          size: 54000,
+          updatedAt: '2022-07-29 16:00:00'
+        },
+        {
+          id: 9,
+          name: '未来社区公司',
+          size: 54000,
+          updatedAt: '2022-07-29 16:00:00'
+        },
+        {
+          id: 10,
+          name: '未来社区公司',
+          size: 54000,
+          updatedAt: '2022-07-29 16:00:00'
         }
       ], // 文件列表
+      multipleSelection: [],
       disabled: true, // 按钮禁用状态
       fileInfo: {
         curPage: 1,
         pageSize: 10,
         total: 0
       }, // 文件信息
-      fileGridSelectList: [] // 文件网格被选中列表
+      fileGridSelectList: [], // 文件网格被选中列表
+      pageDom: null // 整个页面区域的dom信息
     }
   },
   // 计算属性类似于data概念
@@ -198,7 +239,9 @@ export default {
   // 在挂载开始之前被调用
   beforeMount() { },
   // 实例被挂载后调用（可以访问DOM元素）
-  mounted() { },
+  mounted() {
+    this.pageDom = document.getElementById('green-disk')
+  },
   // 在数据发生改变后，DOM被更新之前被调用
   beforeUpdate() { },
   // 在数据更改导致的虚拟DOM重新渲染和更新完毕之后被调用
@@ -226,6 +269,28 @@ export default {
         this.disabled = false
       } else {
         this.disabled = true
+      }
+    },
+    // 选中复选框表格变色
+    tableRowStyle({ row, rowIndex }) {
+      const checkIdList = this.multipleSelection.map((item) => item.id)
+      const tableNode = document.getElementById('file-list-table')
+      if (checkIdList.includes(row.id)) {
+        if (tableNode) {
+          const targetRow = tableNode.getElementsByClassName('el-table__body-wrapper')[0].getElementsByTagName('tbody')[0].children[rowIndex]
+          targetRow.classList.add('file-list-table-row')
+        }
+        return {
+          color: 'white',
+          backgroundColor: '#1FA9FC'
+        }
+      } else {
+        if (tableNode) {
+          const targetRow = tableNode.getElementsByClassName('el-table__body-wrapper')[0].getElementsByTagName('tbody')[0].children[rowIndex]
+          if (targetRow.classList.contains('file-list-table-row')) {
+            targetRow.classList.remove('file-list-table-row')
+          }
+        }
       }
     },
     // 每页记录数更改
@@ -265,8 +330,9 @@ export default {
     },
     // 右键菜单
     onContextMenu(row, column, event) {
-      event.preventDefault()
-      if (event.target.className === 'select-wrapper') {
+      event.preventDefault() // 不能阻止冒泡，但是可以阻止默认事件
+      event.stopPropagation() // 会阻止冒泡事件，但是不会阻止默认事件
+      if (!row && this.pageDom.contains(event.target)) {
         this.$contextmenu({
           items: [
             {
@@ -375,6 +441,49 @@ export default {
 }
 </script>
 
+<style lang='scss'>
+// 去掉表格单元格边框
+#file-list-table th {
+  border: none;
+}
+
+#file-list-table td,
+#file-list-table th.is-leaf {
+  border: none;
+}
+
+// 表格最外边框
+.el-table--border,
+.el-table--group {
+  border: none;
+}
+
+// 表格最外层边框-底部边框
+.el-table--border::after,
+.el-table--group::after {
+  width: 0;
+}
+
+#file-list-table::before {
+  width: 0;
+}
+
+#file-list-table .el-table__fixed-right::before,
+.el-table__fixed::before {
+  width: 0;
+}
+
+// 表格有滚动时表格头边框
+.el-table--border th.gutter:last-of-type {
+  border: 1px solid #EBEEF5;
+  border-left: none;
+}
+
+// 选中行鼠标hover效果
+.file-list-table-row:hover>td {
+  background-color: rgba(0, 0, 0, 0) !important;
+}
+</style>
 <style lang='scss' scoped>
 .app-container {
   .permission-tree {
@@ -403,6 +512,7 @@ export default {
 
 .file-list-wrapper {
   width: calc(100% - 40px);
+  height: calc(100vh - 280px);
   margin-left: 20px;
   margin-top: 20px;
 }
@@ -433,15 +543,6 @@ export default {
   margin-top: 20px;
 }
 
-.file-grid-wrapper::after {
-  content: '';
-  position: absolute;
-  left: 40px;
-  width: calc(100% - 80px);
-  height: 1px;
-  background-color: #DCDFE6;
-}
-
 .file-grid-head {
   display: flex;
   justify-content: space-between;
@@ -455,7 +556,7 @@ export default {
 
 ::v-deep {
   .select-wrapper {
-    height: calc(100vh - 300px);
+    height: calc(100vh - 299px);
   }
 }
 
@@ -520,5 +621,19 @@ export default {
 .file-grid-name-select {
   color: white;
   background-color: #1FA9FC;
+}
+
+.bottom-pagination-wrapper {
+  display: flex;
+  justify-content: center;
+}
+
+.bottom-pagination-wrapper::before {
+  content: '';
+  position: absolute;
+  left: 40px;
+  width: calc(100% - 80px);
+  height: 1px;
+  background-color: #DCDFE6;
 }
 </style>
