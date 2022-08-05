@@ -1,5 +1,6 @@
 <template>
   <div class="aside-menu-wrapper">
+    <!-- 菜单树位置区域 -->
     <el-tree
       id="menu-tree"
       ref="menuTree"
@@ -27,36 +28,21 @@
         </span>
       </span>
     </el-tree>
-    <el-tree
-      id="fast-tree"
-      :data="fastData"
-      :props="defaultProps"
-      :expand-on-click-node="false"
-      :indent="50"
-      default-expand-all
-      node-key="id"
-      @node-click="handleFastNodeClick"
-    >
-      <span slot-scope="{node, data}">
-        <span v-if="data.id === 0" class="fast-first-node">
-          <i :class="data.icon" />
-          {{ node.label }}
-        </span>
-        <span v-else class="fast-child-node">
-          <el-image class="fast-child-node-img" :src="data.icon" fit="cover" />
-          <span>{{ node.label }}</span>
-        </span>
-      </span>
-    </el-tree>
+    <!-- 快捷访问菜单区域 -->
+    <FastAccessMenu :data="fastAccessBtnData" @fastAccess="fastAccess" @fastContextMenu="fastContextMenu" />
   </div>
 </template>
 
 <script>
 // 这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
 // 例如：import 《组件名称》 from '《组件路径》';
+import FastAccessMenu from './components/FastAccessMenu'
+
 export default {
   // import引⼊的组件需要注⼊到对象中才能使⽤
-  components: {},
+  components: {
+    FastAccessMenu
+  },
   // 属性
   props: {},
   // 数据
@@ -118,27 +104,21 @@ export default {
           children: []
         }
       ], // 菜单树数据
-      fastData: [
-        {
-          id: 0,
-          icon: '',
-          label: '快捷访问',
-          children: [
-            {
-              id: 1,
-              icon: this.getFolderImg(),
-              label: 'BookBookBookBook1',
-              children: []
-            },
-            {
-              id: 2,
-              icon: this.getFolderImg(),
-              label: 'Book2',
-              children: []
-            }
-          ]
-        }
-      ] // 快捷访问数据
+      fastAccessBtnData: {
+        name: '快捷访问',
+        children: [
+          {
+            id: 1,
+            img: this.getFolderImg(),
+            name: 'BookBookBookBook1'
+          },
+          {
+            id: 2,
+            img: this.getFolderImg(),
+            name: 'Book2'
+          }
+        ]
+      } // 快捷访问数据
     }
   },
   // 计算属性类似于data概念
@@ -160,9 +140,9 @@ export default {
     })
     // 画分割线
     var menuTreeDomList = document.getElementById('menu-tree').getElementsByClassName('el-tree-node__content')
-    var fastTreeDomList = document.getElementById('fast-tree').getElementsByClassName('el-tree-node__content')
+    // var fastTreeDomList = document.getElementById('fast-tree').getElementsByClassName('el-tree-node__content')
     menuTreeDomList[menuFirstNode.children.length + 1].classList.add('el-tree-node__content-line')
-    fastTreeDomList[0].classList.add('el-tree-node__content-line')
+    // fastTreeDomList[0].classList.add('el-tree-node__content-line')
   },
   // 在数据发生改变后，DOM被更新之前被调用
   beforeUpdate() { },
@@ -182,7 +162,7 @@ export default {
   methods: {
     // 获取文件夹图片
     getFolderImg() {
-      return require('../../../assets/images/file/dir.png')
+      return require('../../../../assets/images/file/dir.png')
     },
     // 选择菜单
     handleMenuNodeClick(data) {
@@ -190,7 +170,18 @@ export default {
     },
     // 选择快捷访问文件/文件夹
     handleFastNodeClick(data) {
+      // this.$refs.fastTree.setCurrentKey(null)
       console.log('handleFastNodeClick: ', data)
+    },
+    // 快捷访问点击快速访问
+    fastAccess(data) {
+      console.log('fastAccess: ', data)
+      this.$emit('fastAccess', data)
+    },
+    // 快捷访问右键菜单
+    fastContextMenu(data, event) {
+      console.log('fastContextMenu: ', data)
+      this.$emit('fastContextMenu', data, event)
     }
   }
 }
@@ -271,26 +262,5 @@ export default {
 .menu-node {
   font-weight: bold;
   margin-left: 38px;
-}
-
-.fast-first-node {
-  font-weight: bold;
-}
-
-.fast-child-node {
-  display: flex;
-  align-items: center;
-}
-
-.fast-child-node span {
-  width: 90px;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-}
-
-.fast-child-node-img {
-  width: 20px;
-  height: 20px;
 }
 </style>
