@@ -1145,7 +1145,7 @@ export default {
 
 <style lang="scss">
 .el-icon-export {
-  background: url('../../assets/images/export.png') center no-repeat;
+  background: url('../../assets/images/custom_icon_images/export.png') center no-repeat;
   background-size: cover;
 }
 
