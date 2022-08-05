@@ -6,7 +6,7 @@
       :data="menuTreeData"
       :props="defaultProps"
       :expand-on-click-node="false"
-      :indent="40"
+      :indent="50"
       default-expand-all
       highlight-current
       node-key="id"
@@ -32,7 +32,7 @@
       :data="fastData"
       :props="defaultProps"
       :expand-on-click-node="false"
-      :indent="40"
+      :indent="50"
       default-expand-all
       node-key="id"
       @node-click="handleFastNodeClick"
@@ -44,7 +44,7 @@
         </span>
         <span v-else class="fast-child-node">
           <el-image class="fast-child-node-img" :src="data.icon" fit="cover" />
-          {{ node.label }}
+          <span>{{ node.label }}</span>
         </span>
       </span>
     </el-tree>
@@ -127,7 +127,7 @@ export default {
             {
               id: 1,
               icon: this.getFolderImg(),
-              label: 'Book1',
+              label: 'BookBookBookBook1',
               children: []
             },
             {
@@ -199,14 +199,14 @@ export default {
 <style lang='scss'>
 // menu-tree节点样式
 #menu-tree .el-tree-node__content {
-  width: 130px;
+  width: 160px;
   height: 40px;
   border-radius: 10px;
 }
 
 // fast-tree节点样式
 #fast-tree .el-tree-node__content {
-  width: 130px;
+  width: 160px;
   height: 40px;
   border-radius: 10px;
 }
@@ -221,14 +221,14 @@ export default {
 #menu-tree.el-tree .el-tree-node__expand-icon {
   font-size: 16px;
   color: #D4DED7;
-  margin-left: 18px;
+  margin-left: 30px;
 }
 
 // fast-tree节点展开图标样式
 #fast-tree.el-tree .el-tree-node__expand-icon {
   font-size: 16px;
   color: #D4DED7;
-  margin-left: 18px;
+  margin-left: 30px;
 }
 
 // menu-tree隐藏叶子节点的图标
@@ -250,16 +250,16 @@ export default {
 .el-tree-node__content-line::before {
   content: '';
   position: absolute;
-  width: 120px;
+  width: 140px;
   height: 1px;
   border-top: 1px solid #DCDFE6;
-  margin-left: 5px;
+  margin-left: 10px;
   margin-bottom: 40px;
 }
 </style>
 <style lang='scss' scoped>
 .aside-menu-wrapper {
-  width: 170px;
+  width: 200px;
   font-size: 14px;
   border-right: 1px solid #DCDFE6;
 }
@@ -270,7 +270,7 @@ export default {
 
 .menu-node {
   font-weight: bold;
-  margin-left: 26px;
+  margin-left: 38px;
 }
 
 .fast-first-node {
@@ -282,9 +282,15 @@ export default {
   align-items: center;
 }
 
+.fast-child-node span {
+  width: 90px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
 .fast-child-node-img {
   width: 20px;
   height: 20px;
-  margin-right: 5px;
 }
 </style>
