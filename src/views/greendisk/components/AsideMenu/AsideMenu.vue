@@ -1,46 +1,22 @@
 <template>
   <div class="aside-menu-wrapper">
-    <!-- 菜单树位置区域 -->
-    <el-tree
-      id="menu-tree"
-      ref="menuTree"
-      :data="menuTreeData"
-      :props="defaultProps"
-      :expand-on-click-node="false"
-      :indent="50"
-      default-expand-all
-      highlight-current
-      node-key="id"
-      @node-click="handleMenuNodeClick"
-    >
-      <span slot-scope="{node, data}">
-        <span v-if="data.id === 0" class="menu-first-node">
-          <i :class="data.icon" />
-          {{ node.label }}
-        </span>
-        <span v-else-if="data.id === 6 || data.id === 7" class="menu-node">
-          <i :class="data.icon" style="margin-right: 2px;" />
-          {{ node.label }}
-        </span>
-        <span v-else>
-          <i :class="data.icon" style="margin-right: 10px;" />
-          {{ node.label }}
-        </span>
-      </span>
-    </el-tree>
+    <!-- 菜单树区域 -->
+    <TreeMenu :data="menuTreeData" @treeMenuClick="treeMenuClick" />
     <!-- 快捷访问菜单区域 -->
-    <FastAccessMenu :data="fastAccessBtnData" @fastAccess="fastAccess" @fastContextMenu="fastContextMenu" />
+    <FastAccessMenu :data="fastAccessMenuData" @fastAccess="fastAccess" @fastContextMenu="fastContextMenu" />
   </div>
 </template>
 
 <script>
 // 这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
 // 例如：import 《组件名称》 from '《组件路径》';
+import TreeMenu from './components/TreeMenu'
 import FastAccessMenu from './components/FastAccessMenu'
 
 export default {
   // import引⼊的组件需要注⼊到对象中才能使⽤
   components: {
+    TreeMenu,
     FastAccessMenu
   },
   // 属性
@@ -49,76 +25,56 @@ export default {
   data() {
     // 这⾥存放数据
     return {
-      defaultProps: {
-        label: 'label',
-        children: 'children'
-      },
       menuTreeData: [
         {
           id: 0,
-          icon: '',
-          label: '所有文件',
+          name: '所有文件',
+          expand: true,
           children: [
             {
               id: 1,
               icon: 'el-icon-headset',
-              label: '音频',
-              children: []
+              name: '音频'
             },
             {
               id: 2,
               icon: 'el-icon-video-play',
-              label: '视频',
-              children: []
+              name: '视频'
             },
             {
               id: 3,
               icon: 'el-icon-picture',
-              label: '图片',
-              children: []
+              name: '图片'
             },
             {
               id: 4,
               icon: 'el-icon-document',
-              label: '文档',
-              children: []
+              name: '文档'
             },
             {
               id: 5,
               icon: 'el-icon-more',
-              label: '其他',
-              children: []
+              name: '其他'
             }
           ]
         },
         {
-          id: 6,
+          id: 100,
           icon: 'el-icon-share',
-          label: '我的分享',
-          children: []
+          name: '我的分享',
+          divided: true,
+          disabled: true
         },
         {
-          id: 7,
+          id: 101,
           icon: 'el-icon-delete',
-          label: '回收站',
-          children: []
+          name: '回收站'
         }
       ], // 菜单树数据
-      fastAccessBtnData: {
+      fastAccessMenuData: {
         name: '快捷访问',
-        children: [
-          {
-            id: 1,
-            img: this.getFolderImg(),
-            name: 'BookBookBookBook1'
-          },
-          {
-            id: 2,
-            img: this.getFolderImg(),
-            name: 'Book2'
-          }
-        ]
-      } // 快捷访问数据
+        children: []
+      } // 快捷访问菜单数据
     }
   },
   // 计算属性类似于data概念
@@ -132,18 +88,7 @@ export default {
   // 在挂载开始之前被调用
   beforeMount() { },
   // 实例被挂载后调用（可以访问DOM元素）
-  mounted() {
-    var menuFirstNode = this.menuTreeData[0]
-    // 默认选中第一个节点
-    this.$nextTick(function() {
-      this.$refs.menuTree.setCurrentKey(menuFirstNode.id)
-    })
-    // 画分割线
-    var menuTreeDomList = document.getElementById('menu-tree').getElementsByClassName('el-tree-node__content')
-    // var fastTreeDomList = document.getElementById('fast-tree').getElementsByClassName('el-tree-node__content')
-    menuTreeDomList[menuFirstNode.children.length + 1].classList.add('el-tree-node__content-line')
-    // fastTreeDomList[0].classList.add('el-tree-node__content-line')
-  },
+  mounted() { },
   // 在数据发生改变后，DOM被更新之前被调用
   beforeUpdate() { },
   // 在数据更改导致的虚拟DOM重新渲染和更新完毕之后被调用
@@ -164,103 +109,25 @@ export default {
     getFolderImg() {
       return require('../../../../assets/images/file/dir.png')
     },
-    // 选择菜单
-    handleMenuNodeClick(data) {
-      console.log('handleMenuNodeClick: ', data)
-    },
-    // 选择快捷访问文件/文件夹
-    handleFastNodeClick(data) {
-      // this.$refs.fastTree.setCurrentKey(null)
-      console.log('handleFastNodeClick: ', data)
+    // 点击菜单树菜单
+    treeMenuClick(data) {
+      this.$emit('treeMenuClick', data)
     },
     // 快捷访问点击快速访问
     fastAccess(data) {
-      console.log('fastAccess: ', data)
       this.$emit('fastAccess', data)
     },
     // 快捷访问右键菜单
     fastContextMenu(data, event) {
-      console.log('fastContextMenu: ', data)
       this.$emit('fastContextMenu', data, event)
     }
   }
 }
 </script>
 
-<style lang='scss'>
-// menu-tree节点样式
-#menu-tree .el-tree-node__content {
-  width: 160px;
-  height: 40px;
-  border-radius: 10px;
-}
-
-// fast-tree节点样式
-#fast-tree .el-tree-node__content {
-  width: 160px;
-  height: 40px;
-  border-radius: 10px;
-}
-
-// menu-tree选中节点高亮样式
-#menu-tree.el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-  color: #1FA9FC;
-  background-color: #EFF9FE;
-}
-
-// menu-tree节点展开图标样式
-#menu-tree.el-tree .el-tree-node__expand-icon {
-  font-size: 16px;
-  color: #D4DED7;
-  margin-left: 30px;
-}
-
-// fast-tree节点展开图标样式
-#fast-tree.el-tree .el-tree-node__expand-icon {
-  font-size: 16px;
-  color: #D4DED7;
-  margin-left: 30px;
-}
-
-// menu-tree隐藏叶子节点的图标
-#menu-tree .el-tree-node__expand-icon.is-leaf {
-  display: none;
-}
-
-// fast-tree隐藏叶子节点的图标
-#fast-tree .el-tree-node__expand-icon.is-leaf {
-  display: none;
-}
-
-// menu-tree选中节点展开图标样式
-#menu-tree.el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content .el-tree-node__expand-icon {
-  color: #1FA9FC;
-}
-
-// 节点分割线
-.el-tree-node__content-line::before {
-  content: '';
-  position: absolute;
-  width: 140px;
-  height: 1px;
-  border-top: 1px solid #DCDFE6;
-  margin-left: 10px;
-  margin-bottom: 40px;
-}
-</style>
 <style lang='scss' scoped>
 .aside-menu-wrapper {
   width: 200px;
-  font-size: 14px;
   border-right: 1px solid #DCDFE6;
-}
-
-.menu-first-node {
-  font-weight: bold;
-}
-
-.menu-node {
-  font-weight: bold;
-  margin-left: 38px;
 }
 </style>

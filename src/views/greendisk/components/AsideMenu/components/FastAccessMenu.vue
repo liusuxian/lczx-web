@@ -18,7 +18,10 @@
       >
         <div class="fast-access-child-menu-item">
           <el-image class="fast-access-child-menu-img" :src="item.img" fit="cover" />
-          <span class="fast-access-child-menu-name">{{ item.name }}</span>
+          <el-tooltip v-if="item.name.length > 9" effect="light" :content="item.name" placement="right">
+            <span class="fast-access-child-menu-name">{{ item.name }}</span>
+          </el-tooltip>
+          <span v-else class="fast-access-child-menu-name">{{ item.name }}</span>
         </div>
       </div>
     </div>
@@ -125,8 +128,6 @@ export default {
   font-size: 16px;
   color: #D4DED7;
   padding-right: 6px;
-  padding-top: 6px;
-  padding-bottom: 6px;
 }
 
 .fast-access-child-menu {
@@ -146,7 +147,7 @@ export default {
 .fast-access-child-menu-item {
   display: flex;
   align-items: center;
-  margin-left: 56px;
+  margin-left: 55px;
 }
 
 .fast-access-child-menu-img {
