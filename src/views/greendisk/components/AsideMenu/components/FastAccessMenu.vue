@@ -124,7 +124,9 @@ export default {
 .fast-access-menu-expand-icon {
   font-size: 16px;
   color: #D4DED7;
-  padding: 6px;
+  padding-right: 6px;
+  padding-top: 6px;
+  padding-bottom: 6px;
 }
 
 .fast-access-child-menu {
