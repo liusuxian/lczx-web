@@ -1,31 +1,7 @@
 <template>
   <div id="green-disk" class="app-container">
     <!-- 侧边栏区域 -->
-    <div class="aside-wrapper">
-      <div>
-        <el-tree :data="data" :props="defaultProps" :highlight-current="true" node-key="id" default-expand-all>
-          <span
-            slot-scope="{ node,data }"
-            class="span-ellipsis"
-            style="display: flex; align-items: center; height: 40px;"
-          >
-            <i v-if="data.$treeNodeId === 2" class="el-icon-headset" />
-            <i v-else-if="data.$treeNodeId === 3" class="el-icon-video-play" />
-            <i v-else-if="data.$treeNodeId === 4" class="el-icon-picture" />
-            <i v-else-if="data.$treeNodeId === 5" class="el-icon-document" />
-            <i v-else-if="data.$treeNodeId === 6" class="el-icon-more" />
-            <span
-              v-if="data.$treeNodeId !== 1"
-              :title="node.label"
-              style="display: flex; margin-left: 10px; padding-top: 11px; height: 40px;"
-            >
-              {{ node.label }}
-            </span>
-            <span v-else :title="node.label">{{ node.label }}</span>
-          </span>
-        </el-tree>
-      </div>
-    </div>
+    <AsideMenu @treeMenuClick="treeMenuClick" @fastAccess="fastAccess" @fastContextMenu="fastContextMenu" />
     <div style="width: 100%;" @contextmenu="onContextMenu(null, null, $event)">
       <!-- 操作按钮区域 -->
       <div class="operation-menu-wrapper">
@@ -163,9 +139,13 @@
 <script>
 // 这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
 // 例如：import 《组件名称》 from '《组件路径》';
+import AsideMenu from './components/AsideMenu/AsideMenu'
+
 export default {
   // import引⼊的组件需要注⼊到对象中才能使⽤
-  components: {},
+  components: {
+    AsideMenu
+  },
   // 属性
   props: {},
   // 数据
@@ -175,36 +155,6 @@ export default {
       showType: 'list', // 展现形式
       selectAllFile: false, // 是否选择全部文件
       searchName: '', // 搜索文件或文件夹名称
-      data: [{
-        id: 1,
-        label: '所有文件',
-        children: [
-          {
-            id: 2,
-            label: '音频'
-          },
-          {
-            id: 3,
-            label: '视频'
-          },
-          {
-            id: 4,
-            label: '图片'
-          },
-          {
-            id: 5,
-            label: '文档'
-          },
-          {
-            id: 6,
-            label: '其他'
-          }
-        ]
-      }],
-      defaultProps: {
-        children: 'children',
-        label: 'label'
-      },
       pathList: [
         {
           id: 0,
@@ -502,6 +452,18 @@ export default {
       } else {
         this.fileGridSelectList = []
       }
+    },
+    // 点击菜单树菜单
+    treeMenuClick(data) {
+      console.log('treeMenuClick: ', data)
+    },
+    // 快捷访问点击快速访问
+    fastAccess(data) {
+      console.log('fastAccess: ', data)
+    },
+    // 快捷访问右键菜单
+    fastContextMenu(data, event) {
+      console.log('fastContextMenu: ', data, event)
     }
   }
 }
@@ -559,11 +521,6 @@ export default {
   }
 }
 
-.aside-wrapper {
-  width: 170px;
-  border-right: 1px solid #DCDFE6;
-}
-
 .operation-menu-wrapper {
   display: flex;
   justify-content: space-between;
@@ -580,7 +537,6 @@ export default {
 
 .breadcrumb-title {
   font-size: 14px;
-  font-family: "微软雅黑";
   padding-bottom: 2px;
 }
 
@@ -606,7 +562,6 @@ export default {
   margin-left: 10px;
   cursor: pointer;
   font-size: 14px;
-  font-family: "微软雅黑";
   width: 240px;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -675,7 +630,6 @@ export default {
   text-align: center;
   margin: 10px 10px 10px 10px;
   font-size: 14px;
-  font-family: "微软雅黑";
   border-radius: 4px;
   overflow: hidden;
   text-overflow: ellipsis;
