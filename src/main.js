@@ -26,6 +26,15 @@ import vueDragSelectPro from 'vue-drag-select-pro'
 import 'vue-drag-select-pro/lib/vueDragSelectPro.css'
 Vue.use(vueDragSelectPro)
 
+// 注册一个全局自定义指令 `v-input-focus`
+Vue.directive('input-focus', {
+  // 当被绑定的元素插入到 DOM 中时
+  inserted: function(el) {
+    // 聚焦元素
+    el.focus()
+  }
+})
+
 Vue.use(Element, {
   size: Cookies.get('size') || 'medium' // set element-ui default size
 })

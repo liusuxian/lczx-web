@@ -8,7 +8,7 @@
         <div>
           <el-button-group>
             <el-button type="primary" size="small" icon="el-icon-upload">上传</el-button>
-            <el-button type="primary" size="small" icon="el-icon-plus" @click="dialogVisible = true">新建文件夹</el-button>
+            <el-button type="primary" size="small" icon="el-icon-plus">新建文件夹</el-button>
             <el-button type="primary" size="small" icon="el-icon-rank" :disabled="disabled">移动</el-button>
             <el-button type="primary" size="small" icon="el-icon-download" :disabled="disabled">下载</el-button>
             <el-button type="danger" size="small" icon="el-icon-delete" :disabled="disabled">删除</el-button>
@@ -112,29 +112,30 @@
                 <div class="file-grid-img-border" :class="{ 'file-grid-img-border-select': isFileGridSelect(item) }">
                   <el-image class="file-grid-img" :src="getFileImg(item.type)" fit="cover" />
                 </div>
-                <div class="file-grid-name" :class="{ 'file-grid-name-select': isFileGridSelect(item) }">
+                <div
+                  v-if="!isFileGridRename(item)"
+                  class="file-grid-name"
+                  :class="{ 'file-grid-name-select': isFileGridSelect(item) }"
+                >
                   {{ item.name }}
                 </div>
+                <input
+                  v-else
+                  v-model="item.name"
+                  v-input-focus
+                  class="file-grid-name"
+                  :class="{ 'file-grid-name-select-input': isFileGridSelect(item) }"
+                  type="text"
+                  @focus.stop="$event.target.select()"
+                  @click.stop="$event.target.select()"
+                  @keyup.enter.stop="handleRename(item, $event)"
+                  @blur.stop="handleRename(item, $event)"
+                >
               </div>
             </drag-select-option>
           </template>
         </vue-drag-select>
       </div>
-      <!-- 弹窗区域 -->
-      <el-dialog
-        :visible.sync="dialogVisible"
-        :title="dialogType === 'rename' ? '文件重命名' : '新建文件夹'"
-        :close-on-click-modal="false"
-        width="420px"
-      >
-        <el-form ref="curFile" :model="curFile">
-          <el-input v-model="curFile.name" placeholder="请输入文件夹名称" clearable />
-        </el-form>
-        <div style="text-align: right; margin-top: 40px;">
-          <el-button type="danger" @click="dialogVisible = false">取消</el-button>
-          <el-button type="primary">确认</el-button>
-        </div>
-      </el-dialog>
       <!-- 底部分页栏区域 -->
       <div class="bottom-pagination-wrapper">
         <el-pagination
@@ -156,6 +157,9 @@
 // 这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
 // 例如：import 《组件名称》 from '《组件路径》';
 import AsideMenu from './components/AsideMenu/AsideMenu'
+import {
+  deepClone
+} from '@/utils'
 
 export default {
   // import引⼊的组件需要注⼊到对象中才能使⽤
@@ -244,11 +248,6 @@ export default {
       ], // 文件列表
       multipleSelection: [],
       disabled: true, // 按钮禁用状态
-      curFile: {
-        id: null,
-        pid: 0,
-        name: ''
-      }, // 当前操作文件或文件夹
       fileInfo: {
         name: '', // 搜索文件或文件夹名称
         curPage: 1,
@@ -256,9 +255,7 @@ export default {
         total: 0
       }, // 文件信息
       fileGridSelectList: [], // 文件网格被选中列表
-      pageDom: null, // 整个页面区域的dom信息
-      dialogVisible: false,
-      dialogType: 'new'
+      pageDom: null // 整个页面区域的dom信息
     }
   },
   // 计算属性类似于data概念
@@ -311,7 +308,9 @@ export default {
       if (checkIdList.includes(row.id)) {
         if (tableNode) {
           const targetRow = tableNode.getElementsByClassName('el-table__body-wrapper')[0].getElementsByTagName('tbody')[0].children[rowIndex]
-          targetRow.classList.add('file-list-table-row')
+          if (targetRow) {
+            targetRow.classList.add('file-list-table-row')
+          }
         }
         return {
           color: 'white',
@@ -320,7 +319,7 @@ export default {
       } else {
         if (tableNode) {
           const targetRow = tableNode.getElementsByClassName('el-table__body-wrapper')[0].getElementsByTagName('tbody')[0].children[rowIndex]
-          if (targetRow.classList.contains('file-list-table-row')) {
+          if (targetRow && targetRow.classList.contains('file-list-table-row')) {
             targetRow.classList.remove('file-list-table-row')
           }
         }
@@ -378,6 +377,24 @@ export default {
               label: '新建文件夹',
               divided: true,
               onClick: () => {
+                // this.fileList.push({
+                //   id: 11,
+                //   name: '新建文件夹',
+                //   size: 54009,
+                //   updatedAt: '2022-07-29 16:00:09'
+                // })
+                // if (this.showType === 'list') {
+                // } else {
+                //   this.fileGridSelectList.push(
+                //     {
+                //       id: 11,
+                //       name: '新建文件夹',
+                //       size: 54009,
+                //       updatedAt: '2022-07-29 16:00:09',
+                //       renameFlag: true
+                //     }
+                //   )
+                // }
                 console.log('新建文件夹: ')
               }
             },
@@ -400,7 +417,7 @@ export default {
           this.$refs.fileListTable.toggleRowSelection(row, true)
         } else {
           this.fileGridSelectList = []
-          this.fileGridSelectList.push(row)
+          this.fileGridSelectList.push(deepClone(row))
         }
         this.$contextmenu({
           items: [
@@ -454,6 +471,10 @@ export default {
               label: '重命名',
               divided: true,
               onClick: () => {
+                var index = this.fileGridSelectList.findIndex(item => item.id === row.id)
+                if (index !== -1) {
+                  this.$set(this.fileGridSelectList[index], 'renameFlag', true)
+                }
                 console.log('重命名: ', row)
               }
             },
@@ -483,10 +504,24 @@ export default {
       var index = this.fileGridSelectList.findIndex(item => item.id === val.id)
       return index !== -1
     },
+    // 文件网格是否将要被重命名
+    isFileGridRename(val) {
+      if (this.fileGridSelectList.length === 0) {
+        if (this.selectAllFile) {
+          this.selectAllFile = false
+        }
+        return false
+      }
+      var index = this.fileGridSelectList.findIndex(item => item.id === val.id)
+      if (index !== -1) {
+        return this.fileGridSelectList[index].renameFlag
+      }
+      return false
+    },
     // 选择/取消所有文件
     handleCheckChange(val) {
       if (val) {
-        this.fileGridSelectList = this.fileList
+        this.fileGridSelectList = deepClone(this.fileList)
       } else {
         this.fileGridSelectList = []
       }
@@ -502,6 +537,15 @@ export default {
     // 快捷访问点击快速访问
     fastAccess(data) {
       console.log('fastAccess: ', data)
+    },
+    // 提交重命名
+    handleRename(data, event) {
+      if (event.keyCode === 13) {
+        // 按下了回车
+        this.fileGridSelectList = []
+      } else {
+        console.log('handleRename: ', data)
+      }
     }
   }
 }
@@ -683,6 +727,15 @@ export default {
 .file-grid-name-select {
   color: white;
   background-color: #1FA9FC;
+}
+
+.file-grid-name-select-input {
+  border: 2px solid #1FA9FC;
+  background-color: white;
+}
+
+.file-grid-name-select-input:focus {
+  outline: none;
 }
 
 .file-select-tips {
