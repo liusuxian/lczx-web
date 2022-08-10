@@ -8,7 +8,7 @@
         <div>
           <el-button-group>
             <el-button type="primary" size="small" icon="el-icon-upload">上传</el-button>
-            <el-button type="primary" size="small" icon="el-icon-plus">新建文件夹</el-button>
+            <el-button type="primary" size="small" icon="el-icon-plus" @click="dialogVisible = true">新建文件夹</el-button>
             <el-button type="primary" size="small" icon="el-icon-rank" :disabled="disabled">移动</el-button>
             <el-button type="primary" size="small" icon="el-icon-download" :disabled="disabled">下载</el-button>
             <el-button type="danger" size="small" icon="el-icon-delete" :disabled="disabled">删除</el-button>
@@ -49,6 +49,7 @@
       <div v-show="showType === 'list'" class="file-list-wrapper">
         <el-table
           id="file-list-table"
+          ref="fileListTable"
           height="calc(100% - 10px)"
           tooltip-effect="light"
           :data="fileList"
@@ -119,6 +120,21 @@
           </template>
         </vue-drag-select>
       </div>
+      <!-- 弹窗区域 -->
+      <el-dialog
+        :visible.sync="dialogVisible"
+        :title="dialogType === 'rename' ? '文件重命名' : '新建文件夹'"
+        :close-on-click-modal="false"
+        width="420px"
+      >
+        <el-form ref="curFile" :model="curFile">
+          <el-input v-model="curFile.name" placeholder="请输入文件夹名称" clearable />
+        </el-form>
+        <div style="text-align: right; margin-top: 40px;">
+          <el-button type="danger" @click="dialogVisible = false">取消</el-button>
+          <el-button type="primary">确认</el-button>
+        </div>
+      </el-dialog>
       <!-- 底部分页栏区域 -->
       <div class="bottom-pagination-wrapper">
         <el-pagination
@@ -228,6 +244,11 @@ export default {
       ], // 文件列表
       multipleSelection: [],
       disabled: true, // 按钮禁用状态
+      curFile: {
+        id: null,
+        pid: 0,
+        name: ''
+      }, // 当前操作文件或文件夹
       fileInfo: {
         name: '', // 搜索文件或文件夹名称
         curPage: 1,
@@ -235,7 +256,9 @@ export default {
         total: 0
       }, // 文件信息
       fileGridSelectList: [], // 文件网格被选中列表
-      pageDom: null // 整个页面区域的dom信息
+      pageDom: null, // 整个页面区域的dom信息
+      dialogVisible: false,
+      dialogType: 'new'
     }
   },
   // 计算属性类似于data概念
@@ -371,6 +394,14 @@ export default {
           minWidth: 100
         })
       } else if (row) {
+        // 默认右键选中
+        if (this.showType === 'list') {
+          this.$refs.fileListTable.clearSelection()
+          this.$refs.fileListTable.toggleRowSelection(row, true)
+        } else {
+          this.fileGridSelectList = []
+          this.fileGridSelectList.push(row)
+        }
         this.$contextmenu({
           items: [
             {
