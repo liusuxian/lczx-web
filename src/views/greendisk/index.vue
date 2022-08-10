@@ -1,7 +1,7 @@
 <template>
   <div id="green-disk" class="app-container">
     <!-- 侧边栏区域 -->
-    <AsideMenu @treeMenuClick="treeMenuClick" @fastAccess="fastAccess" @fastContextMenu="fastContextMenu" />
+    <AsideMenu ref="asideMenuRef" @treeMenuClick="treeMenuClick" @fastAccess="fastAccess" />
     <div style="width: 100%;" @contextmenu="onContextMenu(null, null, $event)">
       <!-- 操作按钮区域 -->
       <div class="operation-menu-wrapper">
@@ -16,7 +16,7 @@
         </div>
         <div style="display: flex;">
           <div style="margin-right: 10px;">
-            <el-input v-model="searchName" placeholder="搜索您的文件" type="text" size="small" maxlength="255" clearable>
+            <el-input v-model="fileInfo.name" placeholder="搜索您的文件" type="text" size="small" maxlength="255" clearable>
               <el-button slot="append" icon="el-icon-search">搜索</el-button>
             </el-input>
           </div>
@@ -154,7 +154,6 @@ export default {
     return {
       showType: 'list', // 展现形式
       selectAllFile: false, // 是否选择全部文件
-      searchName: '', // 搜索文件或文件夹名称
       pathList: [
         {
           id: 0,
@@ -180,7 +179,7 @@ export default {
         },
         {
           id: 3,
-          name: '未来社区公司',
+          name: '未来社区公',
           size: 54002,
           updatedAt: '2022-07-29 16:00:02'
         },
@@ -230,6 +229,7 @@ export default {
       multipleSelection: [],
       disabled: true, // 按钮禁用状态
       fileInfo: {
+        name: '', // 搜索文件或文件夹名称
         curPage: 1,
         pageSize: 10,
         total: 0
@@ -366,7 +366,7 @@ export default {
             }
           ],
           event,
-          customClass: 'custom-class',
+          customClass: 'context-menu-custom-class',
           zIndex: 3,
           minWidth: 100
         })
@@ -421,13 +421,20 @@ export default {
             },
             {
               label: '重命名',
+              divided: true,
               onClick: () => {
                 console.log('重命名: ', row)
+              }
+            },
+            {
+              label: '添加快捷访问',
+              onClick: () => {
+                this.addFastItem(row)
               }
             }
           ],
           event,
-          customClass: 'custom-class',
+          customClass: 'context-menu-custom-class',
           zIndex: 3,
           minWidth: 100
         })
@@ -453,6 +460,10 @@ export default {
         this.fileGridSelectList = []
       }
     },
+    // 添加快捷访问项
+    addFastItem(data) {
+      this.$refs.asideMenuRef.addFastItem(data)
+    },
     // 点击菜单树菜单
     treeMenuClick(data) {
       console.log('treeMenuClick: ', data)
@@ -460,10 +471,6 @@ export default {
     // 快捷访问点击快速访问
     fastAccess(data) {
       console.log('fastAccess: ', data)
-    },
-    // 快捷访问右键菜单
-    fastContextMenu(data, event) {
-      console.log('fastContextMenu: ', data, event)
     }
   }
 }
@@ -510,6 +517,12 @@ export default {
 // 选中行鼠标hover效果
 .file-list-table-row:hover>td {
   background-color: rgba(0, 0, 0, 0) !important;
+}
+
+.context-menu-custom-class .menu_item__available:hover,
+.context-menu-custom-class .menu_item_expand {
+  color: white !important;
+  background-color: #1FA9FC !important;
 }
 </style>
 <style lang='scss' scoped>

@@ -18,7 +18,7 @@
       >
         <div class="fast-access-child-menu-item">
           <el-image class="fast-access-child-menu-img" :src="item.img" fit="cover" />
-          <el-tooltip v-if="item.name.length > 9" effect="light" :content="item.name" placement="right">
+          <el-tooltip v-if="item.name.length > 5" effect="light" :content="item.name" placement="right">
             <span class="fast-access-child-menu-name">{{ item.name }}</span>
           </el-tooltip>
           <span v-else class="fast-access-child-menu-name">{{ item.name }}</span>

@@ -84,7 +84,9 @@ export default {
   // 在实例初始化之后,进行数据侦听和事件/侦听器的配置之前同步调用
   beforeCreate() { },
   // 在实例创建完成后被立即同步调用（可以访问当前this实例）
-  created() { },
+  created() {
+    this.getFastItem()
+  },
   // 在挂载开始之前被调用
   beforeMount() { },
   // 实例被挂载后调用（可以访问DOM元素）
@@ -109,6 +111,20 @@ export default {
     getFolderImg() {
       return require('../../../../assets/images/file/dir.png')
     },
+    // 获取快捷访问项
+    getFastItem() {
+      // var data = {
+      //   id: 1,
+      //   name: 'Book1',
+      // }
+      // this.$set(data, 'img', this.getFolderImg())
+      // this.fastAccessMenuData.children.push(data)
+    },
+    // 添加快捷访问项
+    addFastItem(data) {
+      this.$set(data, 'img', this.getFolderImg())
+      this.fastAccessMenuData.children.push(data)
+    },
     // 点击菜单树菜单
     treeMenuClick(data) {
       this.$emit('treeMenuClick', data)
@@ -119,12 +135,47 @@ export default {
     },
     // 快捷访问右键菜单
     fastContextMenu(data, event) {
-      this.$emit('fastContextMenu', data, event)
+      event.preventDefault() // 不能阻止冒泡，但是可以阻止默认事件
+      event.stopPropagation() // 会阻止冒泡事件，但是不会阻止默认事件
+      this.$contextmenu({
+        items: [
+          {
+            label: '从边栏移除',
+            onClick: () => {
+              this.removeFastItem(data)
+            }
+          }
+        ],
+        event,
+        customClass: 'fast-context-menu-custom-class',
+        zIndex: 3,
+        minWidth: 100
+      })
+      return false
+    },
+    // 从边栏移除快捷访问项
+    removeFastItem(data) {
+      var index = this.fastAccessMenuData.children.findIndex((item) => item.id === data.id)
+      if (index !== -1) {
+        this.fastAccessMenuData.children.splice(index, 1)
+      }
     }
   }
 }
 </script>
 
+<style lang='scss'>
+.fast-context-menu-custom-class {
+  padding: 0px !important;
+}
+
+.fast-context-menu-custom-class .menu_item__available:hover,
+.fast-context-menu-custom-class .menu_item_expand {
+  border-radius: 4px !important;
+  color: white !important;
+  background-color: #1FA9FC !important;
+}
+</style>
 <style lang='scss' scoped>
 .aside-menu-wrapper {
   width: 200px;
