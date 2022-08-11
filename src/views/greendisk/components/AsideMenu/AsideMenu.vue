@@ -165,10 +165,12 @@ export default {
 </script>
 
 <style lang='scss'>
+// 右键菜单样式
 .fast-context-menu-custom-class {
   padding: 0px !important;
 }
 
+// 右键菜单样式
 .fast-context-menu-custom-class .menu_item__available:hover,
 .fast-context-menu-custom-class .menu_item_expand {
   border-radius: 4px !important;

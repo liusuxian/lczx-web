@@ -594,6 +594,7 @@ export default {
   background-color: rgba(0, 0, 0, 0) !important;
 }
 
+// 右键菜单样式
 .context-menu-custom-class .menu_item__available:hover,
 .context-menu-custom-class .menu_item_expand {
   color: white !important;
