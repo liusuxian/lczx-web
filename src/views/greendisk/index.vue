@@ -8,7 +8,9 @@
         <div>
           <el-button-group>
             <el-button type="primary" size="small" icon="el-icon-upload">上传</el-button>
-            <el-button type="primary" size="small" icon="el-icon-plus">新建文件夹</el-button>
+            <el-button type="primary" size="small" icon="el-icon-plus" @click.stop="handleCreateFolder">
+              新建文件夹
+            </el-button>
             <el-button type="primary" size="small" icon="el-icon-rank" :disabled="disabled">移动</el-button>
             <el-button type="primary" size="small" icon="el-icon-download" :disabled="disabled">下载</el-button>
             <el-button type="danger" size="small" icon="el-icon-delete" :disabled="disabled">删除</el-button>
@@ -64,7 +66,27 @@
             <template slot-scope="scope">
               <div class="file-list-item">
                 <el-image class="file-list-img" :src="getFileImg(scope.row.type)" fit="cover" />
-                <div class="file-list-name">{{ scope.row.name }}</div>
+                <div v-if="scope.row.id !== curRenameFile.id" class="file-list-name">{{ scope.row.name }}</div>
+                <input
+                  v-else
+                  v-model="scope.row.name"
+                  v-input-focus
+                  class="file-list-name"
+                  :class="{ 'file-list-name-select-input': isFileListSelect(scope.row) }"
+                  type="text"
+                  @focus.stop="$event.target.select()"
+                  @click.stop="$event.target.select()"
+                  @keyup.enter.stop="handleSubmitRename(scope.row, $event)"
+                  @blur.stop="handleSubmitRename(scope.row, $event)"
+                >
+                <!-- <div class="file-list-name">
+                  <div v-if="scope.row.id !== curRenameFile.id">{{ scope.row.name }}</div>
+                  <input v-else v-model="scope.row.name" v-input-focus
+                    :class="{ 'file-list-name-select-input': isFileListSelect(scope.row) }" type="text"
+                    @focus.stop="$event.target.select()" @click.stop="$event.target.select()"
+                    @keyup.enter.stop="handleSubmitRename(scope.row, $event)"
+                    @blur.stop="handleSubmitRename(scope.row, $event)">
+                </div> -->
               </div>
             </template>
           </el-table-column>
@@ -113,7 +135,7 @@
                   <el-image class="file-grid-img" :src="getFileImg(item.type)" fit="cover" />
                 </div>
                 <div
-                  v-if="!isFileGridRename(item)"
+                  v-if="item.id !== curRenameFile.id"
                   class="file-grid-name"
                   :class="{ 'file-grid-name-select': isFileGridSelect(item) }"
                 >
@@ -128,8 +150,8 @@
                   type="text"
                   @focus.stop="$event.target.select()"
                   @click.stop="$event.target.select()"
-                  @keyup.enter.stop="handleRename(item, $event)"
-                  @blur.stop="handleRename(item, $event)"
+                  @keyup.enter.stop="handleSubmitRename(item, $event)"
+                  @blur.stop="handleSubmitRename(item, $event)"
                 >
               </div>
             </drag-select-option>
@@ -158,8 +180,8 @@
 // 例如：import 《组件名称》 from '《组件路径》';
 import AsideMenu from './components/AsideMenu/AsideMenu'
 import {
-  deepClone
-} from '@/utils'
+  Loading
+} from 'element-ui'
 
 export default {
   // import引⼊的组件需要注⼊到对象中才能使⽤
@@ -255,13 +277,27 @@ export default {
         total: 0
       }, // 文件信息
       fileGridSelectList: [], // 文件网格被选中列表
+      curRenameFile: {
+        id: -1,
+        oldName: ''
+      }, // 当前重命名的文件/文件夹信息
       pageDom: null // 整个页面区域的dom信息
     }
   },
   // 计算属性类似于data概念
   computed: {},
   // 监控data中的数据变化
-  watch: {},
+  watch: {
+    // 监控文件网格被选中列表
+    fileGridSelectList: {
+      handler(newVal, oldVal) {
+        if (newVal.length === 0 && this.selectAllFile) {
+          this.selectAllFile = false
+        }
+      },
+      immediate: true
+    }
+  },
   // 在实例初始化之后,进行数据侦听和事件/侦听器的配置之前同步调用
   beforeCreate() { },
   // 在实例创建完成后被立即同步调用（可以访问当前this实例）
@@ -307,7 +343,8 @@ export default {
       const tableNode = document.getElementById('file-list-table')
       if (checkIdList.includes(row.id)) {
         if (tableNode) {
-          const targetRow = tableNode.getElementsByClassName('el-table__body-wrapper')[0].getElementsByTagName('tbody')[0].children[rowIndex]
+          const targetRow = tableNode.getElementsByClassName('el-table__body-wrapper')[0]
+            .getElementsByTagName('tbody')[0].children[rowIndex]
           if (targetRow) {
             targetRow.classList.add('file-list-table-row')
           }
@@ -318,7 +355,8 @@ export default {
         }
       } else {
         if (tableNode) {
-          const targetRow = tableNode.getElementsByClassName('el-table__body-wrapper')[0].getElementsByTagName('tbody')[0].children[rowIndex]
+          const targetRow = tableNode.getElementsByClassName('el-table__body-wrapper')[0]
+            .getElementsByTagName('tbody')[0].children[rowIndex]
           if (targetRow && targetRow.classList.contains('file-list-table-row')) {
             targetRow.classList.remove('file-list-table-row')
           }
@@ -361,174 +399,181 @@ export default {
       return '文件夹'
     },
     // 右键菜单
-    onContextMenu(row, column, event) {
+    onContextMenu(rowOrItem, column, event) {
       event.preventDefault() // 不能阻止冒泡，但是可以阻止默认事件
       event.stopPropagation() // 会阻止冒泡事件，但是不会阻止默认事件
-      if (!row && this.pageDom.contains(event.target)) {
-        this.$contextmenu({
-          items: [
-            {
-              label: '上传',
-              onClick: () => {
-                console.log('上传: ')
-              }
-            },
-            {
-              label: '新建文件夹',
-              divided: true,
-              onClick: () => {
-                // this.fileList.push({
-                //   id: 11,
-                //   name: '新建文件夹',
-                //   size: 54009,
-                //   updatedAt: '2022-07-29 16:00:09'
-                // })
-                // if (this.showType === 'list') {
-                // } else {
-                //   this.fileGridSelectList.push(
-                //     {
-                //       id: 11,
-                //       name: '新建文件夹',
-                //       size: 54009,
-                //       updatedAt: '2022-07-29 16:00:09',
-                //       renameFlag: true
-                //     }
-                //   )
-                // }
-                console.log('新建文件夹: ')
-              }
-            },
-            {
-              label: '刷新',
-              onClick: () => {
-                console.log('刷新: ')
-              }
-            }
-          ],
-          event,
-          customClass: 'context-menu-custom-class',
-          zIndex: 3,
-          minWidth: 100
-        })
-      } else if (row) {
-        // 默认右键选中
+      var items = []
+      if (!rowOrItem && this.pageDom.contains(event.target)) {
+        // 清空选择项
         if (this.showType === 'list') {
           this.$refs.fileListTable.clearSelection()
-          this.$refs.fileListTable.toggleRowSelection(row, true)
         } else {
           this.fileGridSelectList = []
-          this.fileGridSelectList.push(deepClone(row))
         }
-        this.$contextmenu({
-          items: [
+        // 菜单项
+        items = [
+          {
+            label: '上传',
+            onClick: () => {
+              console.log('上传: ')
+            }
+          },
+          {
+            label: '新建文件夹',
+            divided: true,
+            onClick: () => {
+              this.handleCreateFolder()
+            }
+          },
+          {
+            label: '刷新',
+            onClick: () => {
+              console.log('刷新: ')
+            }
+          }
+        ]
+      } else if (rowOrItem) {
+        // 处理右键选中
+        this.handleContextMenuSelect(rowOrItem)
+        // 菜单项
+        items = [
+          {
+            label: '打开',
+            onClick: () => {
+              console.log('打开: ', rowOrItem)
+            }
+          },
+          {
+            label: '下载',
+            divided: true,
+            onClick: () => {
+              console.log('下载: ', rowOrItem)
+            }
+          },
+          {
+            label: '权限',
+            onClick: () => {
+              console.log('权限: ', rowOrItem)
+            }
+          },
+          {
+            label: '分享',
+            divided: true,
+            disabled: true,
+            onClick: () => {
+              console.log('分享: ', rowOrItem)
+            }
+          },
+          {
+            label: '移动到',
+            onClick: () => {
+              console.log('移动到: ', rowOrItem)
+            }
+          },
+          {
+            label: '复制到',
+            divided: true,
+            onClick: () => {
+              console.log('复制到: ', rowOrItem)
+            }
+          }
+        ]
+        // 是否多选项
+        var multiSelectFlag = false
+        var curSelectList = []
+        if (this.showType === 'list') {
+          multiSelectFlag = this.multipleSelection.length > 1
+          curSelectList = this.multipleSelection
+        } else {
+          multiSelectFlag = this.fileGridSelectList.length > 1
+          curSelectList = this.fileGridSelectList
+        }
+        if (multiSelectFlag) {
+          items = items.concat([
             {
-              label: '打开',
-              onClick: () => {
-                console.log('打开: ', row)
-              }
-            },
-            {
-              label: '下载',
+              label: '删除',
               divided: true,
               onClick: () => {
-                console.log('下载: ', row)
+                console.log('删除: ', rowOrItem)
               }
             },
             {
-              label: '权限',
+              label: '添加快捷访问',
               onClick: () => {
-                console.log('分享: ', row)
+                this.addFastItems(curSelectList)
               }
-            },
-            {
-              label: '分享',
-              divided: true,
-              disabled: true,
-              onClick: () => {
-                console.log('分享: ', row)
-              }
-            },
-            {
-              label: '移动到',
-              onClick: () => {
-                console.log('移动到: ', row)
-              }
-            },
-            {
-              label: '复制到',
-              divided: true,
-              onClick: () => {
-                console.log('复制到: ', row)
-              }
-            },
+            }
+          ])
+        } else {
+          items = items.concat([
             {
               label: '删除',
               onClick: () => {
-                console.log('删除: ', row)
+                console.log('删除: ', rowOrItem)
               }
             },
             {
               label: '重命名',
               divided: true,
               onClick: () => {
-                var index = this.fileGridSelectList.findIndex(item => item.id === row.id)
-                if (index !== -1) {
-                  this.$set(this.fileGridSelectList[index], 'renameFlag', true)
-                }
-                console.log('重命名: ', row)
+                this.handleRename(rowOrItem)
               }
             },
             {
               label: '添加快捷访问',
               onClick: () => {
-                this.addFastItem(row)
+                this.addFastItems(curSelectList)
               }
             }
-          ],
-          event,
-          customClass: 'context-menu-custom-class',
-          zIndex: 3,
-          minWidth: 100
-        })
+          ])
+        }
       }
+      this.$contextmenu({
+        items: items,
+        event,
+        customClass: 'context-menu-custom-class',
+        zIndex: 3,
+        minWidth: 100
+      })
       return false
+    },
+    // 文件列表行是否被选中
+    isFileListSelect(val) {
+      var index = this.multipleSelection.findIndex((item) => item.id === val.id)
+      return index !== -1
     },
     // 文件网格是否被选中
     isFileGridSelect(val) {
-      if (this.fileGridSelectList.length === 0) {
-        if (this.selectAllFile) {
-          this.selectAllFile = false
-        }
-        return false
-      }
-      var index = this.fileGridSelectList.findIndex(item => item.id === val.id)
+      var index = this.fileGridSelectList.findIndex((item) => item.id === val.id)
       return index !== -1
-    },
-    // 文件网格是否将要被重命名
-    isFileGridRename(val) {
-      if (this.fileGridSelectList.length === 0) {
-        if (this.selectAllFile) {
-          this.selectAllFile = false
-        }
-        return false
-      }
-      var index = this.fileGridSelectList.findIndex(item => item.id === val.id)
-      if (index !== -1) {
-        return this.fileGridSelectList[index].renameFlag
-      }
-      return false
     },
     // 选择/取消所有文件
     handleCheckChange(val) {
       if (val) {
-        this.fileGridSelectList = deepClone(this.fileList)
+        this.fileGridSelectList = this.fileList
       } else {
         this.fileGridSelectList = []
       }
     },
+    // 处理右键选中
+    handleContextMenuSelect(val) {
+      if (this.showType === 'list') {
+        const index = this.multipleSelection.findIndex((item) => item.id === val.id)
+        if (index === -1) {
+          this.$refs.fileListTable.clearSelection()
+          this.$refs.fileListTable.toggleRowSelection(val, true)
+        }
+      } else {
+        const index = this.fileGridSelectList.findIndex((item) => item.id === val.id)
+        if (index === -1) {
+          this.fileGridSelectList = []
+          this.fileGridSelectList.push(val)
+        }
+      }
+    },
     // 添加快捷访问项
-    addFastItem(data) {
-      this.$refs.asideMenuRef.addFastItem(data)
+    addFastItems(dataList) {
+      this.$refs.asideMenuRef.addFastItems(dataList)
     },
     // 点击菜单树菜单
     treeMenuClick(data) {
@@ -538,14 +583,59 @@ export default {
     fastAccess(data) {
       console.log('fastAccess: ', data)
     },
-    // 提交重命名
-    handleRename(data, event) {
-      if (event.keyCode === 13) {
-        // 按下了回车
-        this.fileGridSelectList = []
-      } else {
-        console.log('handleRename: ', data)
+    // 新建文件夹
+    handleCreateFolder() {
+      var folder = {
+        id: 0,
+        name: '新建文件夹'
       }
+      this.fileList.push(folder)
+      this.curRenameFile.id = folder.id
+      this.curRenameFile.oldName = 'newFolder'
+      if (this.showType === 'list') {
+        this.$refs.fileListTable.toggleRowSelection(folder, true)
+      } else {
+        this.fileGridSelectList.push(folder)
+      }
+    },
+    // 重命名
+    handleRename(data) {
+      this.curRenameFile.id = data.id
+      this.curRenameFile.oldName = data.name
+    },
+    // 提交重命名
+    handleSubmitRename(data, event) {
+      if (this.curRenameFile.oldName !== '' && this.curRenameFile.oldName !== data.name) {
+        const loading = Loading.service({
+          lock: true,
+          text: '正在创建文件夹，请稍候...',
+          spinner: 'el-icon-loading',
+          background: 'rgba(0, 0, 0, 0.8) !important'
+        })
+        if (event.keyCode === 13) {
+          // 按下了回车
+          if (this.showType === 'list') {
+            this.$refs.fileListTable.clearSelection()
+          } else {
+            this.fileGridSelectList = []
+          }
+        } else {
+          // 失去焦点
+          if (this.showType === 'list') {
+            this.$refs.fileListTable.clearSelection()
+          }
+        }
+        console.log('提交重命名: ', data)
+        setTimeout(() => {
+          // 以服务的方式调用的 Loading 需要异步关闭
+          this.$nextTick(() => {
+            loading.close()
+          })
+        }, 5000)
+      }
+      // 重置
+      this.curRenameFile.id = -1
+      this.curRenameFile.oldName = ''
     }
   }
 }
@@ -638,8 +728,6 @@ export default {
 
 .file-list-item {
   display: flex;
-  justify-content: flex-start;
-  align-items: center;
 }
 
 .file-list-img {
@@ -649,12 +737,28 @@ export default {
 
 .file-list-name {
   margin-left: 10px;
+  padding-top: 4px;
   cursor: pointer;
   font-size: 14px;
   width: 240px;
+  height: 30px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
+}
+
+.file-list-name-select-input {
+  padding-top: 0;
+  border: 0;
+  background-color: white;
+}
+
+.file-list-name-select-input:focus {
+  outline: none;
+}
+
+.file-list-name-select-input:hover {
+  cursor: auto;
 }
 
 .file-grid-wrapper {

@@ -1,154 +1,161 @@
 <template>
   <div class="app-container">
-    <el-form
-      ref="reportForm"
-      style="display: flex; margin-bottom: 20px; flex-wrap: wrap;"
-      :model="reportForm"
-      label-position="left"
-    >
-      <el-form-item prop="reportName" label="报告名称" label-width="70px" style="margin-right: 20px;">
-        <el-input
-          ref="reportName"
-          v-model="reportForm.reportName"
-          placeholder="请输入报告名称"
-          name="reportName"
-          type="text"
-          tabindex="1"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item prop="projectName" label="项目名称" label-width="70px" style="margin-right: 20px;">
-        <el-input
-          ref="projectName"
-          v-model="reportForm.projectName"
-          placeholder="请输入项目名称"
-          name="projectName"
-          type="text"
-          tabindex="2"
-          clearable
-        />
-      </el-form-item>
-      <el-form-item prop="typeId" label="专业类别" label-width="70px" style="margin-right: 20px;">
-        <el-select v-model="reportForm.typeId" tabindex="3" placeholder="请选择专业类别" clearable style="width: 180px">
-          <el-option v-for="item in reportTypeCfgList" :key="item.id" :label="item.name" :value="item.id" />
-        </el-select>
-      </el-form-item>
-      <el-form-item prop="excellence" label="是否优秀报告" label-width="100px" style="margin-right: 20px;">
-        <el-select v-model="reportForm.excellence" tabindex="4" placeholder="请选择是否优秀报告" clearable style="width: 180px">
-          <el-option v-for="item in excellenceStatusList" :key="item.value" :label="item.name" :value="item.value" />
-        </el-select>
-      </el-form-item>
-      <el-button
-        style="margin-top: 2px; height: 32px;"
-        type="primary"
-        size="small"
-        icon="el-icon-search"
-        @click.native.prevent="handleGetReportList(1)"
-      >搜索</el-button>
-    </el-form>
-
-    <el-row v-for="(itemList, index) in reportList" :key="index" :gutter="20">
-      <el-col v-for="(item, subIndex) in itemList" :key="subIndex" :span="6">
-        <el-card>
-          <div slot="header" class="report_title" @click="handleReportPage(item)">
-            {{ getReportName(item) }}
-          </div>
-          <ul class="list-group list-group-striped">
-            <li class="list-group-item">
-              <div class="list-group-item-title">
-                <svg-icon icon-class="project1" />项目名称
-              </div>
-              <div class="pull-right">
-                <div
-                  style="cursor: pointer; color: #1890ff;"
-                  class="pull-right-content"
-                  @click="handleProjectPage(item)"
-                >{{ item.report.projectName }}</div>
-              </div>
-            </li>
-            <li class="list-group-item">
-              <div class="list-group-item-title">
-                <svg-icon icon-class="classification" />专业类别
-              </div>
-              <div class="pull-right">
-                <div class="pull-right-content">{{ getReportType(item) }}</div>
-              </div>
-            </li>
-            <li class="list-group-item">
-              <div class="list-group-item-title">
-                <svg-icon icon-class="excellence" />是否优秀报告
-              </div>
-              <div class="pull-right">
-                <div v-show="item.report.excellence === 2" style="color: orangered;" class="pull-right-content">
-                  {{ getIsExcellenceReport(item) }}
-                </div>
-                <div v-show="item.report.excellence === 1" style="color: forestgreen;" class="pull-right-content">
-                  {{ getIsExcellenceReport(item) }}
-                </div>
-                <div v-show="item.report.excellence === 0" class="pull-right-content">
-                  {{ getIsExcellenceReport(item) }}
-                </div>
-              </div>
-            </li>
-            <li class="list-group-item">
-              <div class="list-group-item-title">
-                <svg-icon icon-class="user1" />上传者
-              </div>
-              <div class="pull-right">
-                <div class="pull-right-content">{{ item.report.createName }}</div>
-              </div>
-            </li>
-            <li class="list-group-item">
-              <div class="list-group-item-title">
-                <svg-icon icon-class="date" />上传时间
-              </div>
-              <div class="pull-right">
-                <div class="pull-right-content">{{ item.report.createdAt }}</div>
-              </div>
-            </li>
-            <li class="list-group-item">
-              <div class="list-group-item-title">
-                <svg-icon icon-class="operation" />评选优秀报告
-              </div>
-              <div class="pull-right">
-                <div class="pull-right-content">
-                  <el-button
-                    :disabled="item.report.excellence !== 1"
-                    class="pull-right-button"
-                    type="text"
-                    @click="handleChoose(item, 2)"
-                  >是</el-button>
-                  <el-button
-                    :disabled="item.report.excellence !== 1"
-                    class="pull-right-button"
-                    type="text"
-                    @click="handleChoose(item, 0)"
-                  >否</el-button>
-                </div>
-              </div>
-            </li>
-          </ul>
-          <div class="pull-right">
-            <div style="margin-right: 10px; margin-bottom: 10px;" class="pull-right-content">
-              <el-button disabled type="text" @click="handleEdit(item)">编辑</el-button>
-              <el-button type="text" @click="handleDownload(item)">下载</el-button>
+    <!-- 搜索区域 -->
+    <div class="report-search-wrapper">
+      <el-form ref="reportForm" class="report-search-form" :model="reportForm" label-position="left">
+        <el-form-item prop="reportName" label="报告名称" label-width="70px" style="margin-right: 20px;">
+          <el-input
+            ref="reportName"
+            v-model="reportForm.reportName"
+            placeholder="请输入报告名称"
+            name="reportName"
+            type="text"
+            tabindex="1"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item prop="projectName" label="项目名称" label-width="70px" style="margin-right: 20px;">
+          <el-input
+            ref="projectName"
+            v-model="reportForm.projectName"
+            placeholder="请输入项目名称"
+            name="projectName"
+            type="text"
+            tabindex="2"
+            clearable
+          />
+        </el-form-item>
+        <el-form-item prop="typeId" label="专业类别" label-width="70px" style="margin-right: 20px;">
+          <el-select v-model="reportForm.typeId" tabindex="3" placeholder="请选择专业类别" clearable style="width: 180px">
+            <el-option v-for="item in reportTypeCfgList" :key="item.id" :label="item.name" :value="item.id" />
+          </el-select>
+        </el-form-item>
+        <el-form-item prop="excellence" label="是否优秀报告" label-width="100px" style="margin-right: 20px;">
+          <el-select
+            v-model="reportForm.excellence"
+            tabindex="4"
+            placeholder="请选择是否优秀报告"
+            clearable
+            style="width: 180px"
+          >
+            <el-option v-for="item in excellenceStatusList" :key="item.value" :label="item.name" :value="item.value" />
+          </el-select>
+        </el-form-item>
+        <el-button
+          style="margin-top: 2px; height: 32px;"
+          type="primary"
+          size="small"
+          icon="el-icon-search"
+          @click.native.prevent="handleGetReportList(1)"
+        >搜索</el-button>
+      </el-form>
+    </div>
+    <!-- 报告卡片区域 -->
+    <div class="report-card-wrapper">
+      <el-row v-for="(itemList, index) in reportList" :key="index" :gutter="20">
+        <el-col v-for="(item, subIndex) in itemList" :key="subIndex" :span="6">
+          <el-card>
+            <div slot="header" class="report_title" @click="handleReportPage(item)">
+              {{ getReportName(item) }}
             </div>
-          </div>
-        </el-card>
-      </el-col>
-    </el-row>
-
-    <el-pagination
-      style="display: flex; justify-content: center; margin-top: 20px;"
-      :current-page="reportForm.curPage"
-      :page-sizes="[12, 24, 36, 48, 60]"
-      :page-size="reportForm.pageSize"
-      :disabled="reportForm.total <= reportForm.pageSize"
-      layout="total, sizes, prev, pager, next, jumper"
-      :total="reportForm.total"
-      @size-change="handleSizeChange"
-      @current-change="handleCurChange"
-    />
+            <ul class="list-group list-group-striped">
+              <li class="list-group-item">
+                <div class="list-group-item-title">
+                  <svg-icon icon-class="project1" />项目名称
+                </div>
+                <div class="pull-right">
+                  <div
+                    style="cursor: pointer; color: #1890ff;"
+                    class="pull-right-content"
+                    @click="handleProjectPage(item)"
+                  >{{ item.report.projectName }}</div>
+                </div>
+              </li>
+              <li class="list-group-item">
+                <div class="list-group-item-title">
+                  <svg-icon icon-class="classification" />专业类别
+                </div>
+                <div class="pull-right">
+                  <div class="pull-right-content">{{ getReportType(item) }}</div>
+                </div>
+              </li>
+              <li class="list-group-item">
+                <div class="list-group-item-title">
+                  <svg-icon icon-class="excellence" />是否优秀报告
+                </div>
+                <div class="pull-right">
+                  <div v-show="item.report.excellence === 2" style="color: orangered;" class="pull-right-content">
+                    {{ getIsExcellenceReport(item) }}
+                  </div>
+                  <div v-show="item.report.excellence === 1" style="color: forestgreen;" class="pull-right-content">
+                    {{ getIsExcellenceReport(item) }}
+                  </div>
+                  <div v-show="item.report.excellence === 0" class="pull-right-content">
+                    {{ getIsExcellenceReport(item) }}
+                  </div>
+                </div>
+              </li>
+              <li class="list-group-item">
+                <div class="list-group-item-title">
+                  <svg-icon icon-class="user1" />上传者
+                </div>
+                <div class="pull-right">
+                  <div class="pull-right-content">{{ item.report.createName }}</div>
+                </div>
+              </li>
+              <li class="list-group-item">
+                <div class="list-group-item-title">
+                  <svg-icon icon-class="date" />上传时间
+                </div>
+                <div class="pull-right">
+                  <div class="pull-right-content">{{ item.report.createdAt }}</div>
+                </div>
+              </li>
+              <li class="list-group-item">
+                <div class="list-group-item-title">
+                  <svg-icon icon-class="operation" />评选优秀报告
+                </div>
+                <div class="pull-right">
+                  <div class="pull-right-content">
+                    <el-button
+                      :disabled="item.report.excellence !== 1"
+                      class="pull-right-button"
+                      type="text"
+                      @click="handleChoose(item, 2)"
+                    >是</el-button>
+                    <el-button
+                      :disabled="item.report.excellence !== 1"
+                      class="pull-right-button"
+                      type="text"
+                      @click="handleChoose(item, 0)"
+                    >否</el-button>
+                  </div>
+                </div>
+              </li>
+            </ul>
+            <div class="pull-right">
+              <div style="margin-right: 10px; margin-bottom: 10px;" class="pull-right-content">
+                <el-button disabled type="text" @click="handleEdit(item)">编辑</el-button>
+                <el-button type="text" @click="handleDownload(item)">下载</el-button>
+              </div>
+            </div>
+          </el-card>
+        </el-col>
+      </el-row>
+    </div>
+    <!-- 底部分页栏区域 -->
+    <div class="bottom-pagination-wrapper">
+      <el-pagination
+        :current-page="reportForm.curPage"
+        :page-sizes="[12, 24, 36, 48, 60]"
+        :page-size="reportForm.pageSize"
+        :disabled="reportForm.total <= reportForm.pageSize"
+        layout="total, sizes, prev, pager, next, jumper"
+        :total="reportForm.total"
+        @size-change="handleSizeChange"
+        @current-change="handleCurChange"
+      />
+    </div>
   </div>
 </template>
 
@@ -381,6 +388,15 @@ export default {
   }
 }
 
+.report-search-wrapper {
+  margin-bottom: 20px;
+}
+
+.report-search-form {
+  display: flex;
+  flex-wrap: wrap;
+}
+
 .el-row {
   margin-bottom: 20px;
 
@@ -451,5 +467,12 @@ export default {
 
 .pull-right-button {
   padding: 0px 0px;
+}
+
+.bottom-pagination-wrapper {
+  display: flex;
+  justify-content: center;
+  margin-top: 20px;
+  border-top: 1px solid #DCDFE6;
 }
 </style>

@@ -121,9 +121,11 @@ export default {
       // this.fastAccessMenuData.children.push(data)
     },
     // 添加快捷访问项
-    addFastItem(data) {
-      this.$set(data, 'img', this.getFolderImg())
-      this.fastAccessMenuData.children.push(data)
+    addFastItems(dataList) {
+      for (const data of dataList) {
+        this.$set(data, 'img', this.getFolderImg())
+        this.fastAccessMenuData.children.push(data)
+      }
     },
     // 点击菜单树菜单
     treeMenuClick(data) {
