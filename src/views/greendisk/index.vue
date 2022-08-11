@@ -79,14 +79,6 @@
                   @keyup.enter.stop="handleSubmitRename(scope.row, $event)"
                   @blur.stop="handleSubmitRename(scope.row, $event)"
                 >
-                <!-- <div class="file-list-name">
-                  <div v-if="scope.row.id !== curRenameFile.id">{{ scope.row.name }}</div>
-                  <input v-else v-model="scope.row.name" v-input-focus
-                    :class="{ 'file-list-name-select-input': isFileListSelect(scope.row) }" type="text"
-                    @focus.stop="$event.target.select()" @click.stop="$event.target.select()"
-                    @keyup.enter.stop="handleSubmitRename(scope.row, $event)"
-                    @blur.stop="handleSubmitRename(scope.row, $event)">
-                </div> -->
               </div>
             </template>
           </el-table-column>
