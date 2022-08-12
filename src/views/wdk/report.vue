@@ -52,8 +52,8 @@
     </div>
     <!-- 报告卡片区域 -->
     <div class="report-card-wrapper">
-      <el-row v-for="(itemList, index) in reportList" :key="index" :gutter="20">
-        <el-col v-for="(item, subIndex) in itemList" :key="subIndex" :span="6">
+      <el-row :gutter="20">
+        <el-col v-for="(item, index) in reportList" :key="index" :xs="12" :sm="8" :md="6" :lg="6" :xl="4">
           <el-card>
             <div slot="header" class="report_title" @click="handleReportPage(item)">
               {{ getReportName(item) }}
@@ -270,17 +270,7 @@ export default {
         this.reportList = []
         var dataList = res.data.list
         if (dataList) {
-          var tmpList = []
-          for (let i = 0; i < dataList.length; i++) {
-            tmpList.push(dataList[i])
-            if ((i + 1) % 4 === 0) {
-              this.reportList.push(tmpList)
-              tmpList = []
-            }
-          }
-          if (tmpList.length > 0) {
-            this.reportList.push(tmpList)
-          }
+          this.reportList = dataList
         }
         this.reportForm.curPage = res.data.curPage
         this.reportForm.total = res.data.total
@@ -397,12 +387,8 @@ export default {
   flex-wrap: wrap;
 }
 
-.el-row {
+.el-col {
   margin-bottom: 20px;
-
-  &:last-child {
-    margin-bottom: 0;
-  }
 }
 
 .el-card ::v-deep .el-card__header {
