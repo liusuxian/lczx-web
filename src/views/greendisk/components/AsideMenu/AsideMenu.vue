@@ -182,7 +182,10 @@ export default {
 </style>
 <style lang='scss' scoped>
 .aside-menu-wrapper {
-  width: 200px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 160px;
   border-right: 1px solid #DCDFE6;
 }
 </style>

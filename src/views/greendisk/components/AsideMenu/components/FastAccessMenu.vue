@@ -17,11 +17,14 @@
         @contextmenu="fastContextMenu(item, $event)"
       >
         <div class="fast-access-child-menu-item">
-          <el-image class="fast-access-child-menu-img" :src="item.img" fit="cover" />
-          <el-tooltip v-if="item.name.length > 5" effect="light" :content="item.name" placement="right">
-            <span class="fast-access-child-menu-name">{{ item.name }}</span>
-          </el-tooltip>
-          <span v-else class="fast-access-child-menu-name">{{ item.name }}</span>
+          <img class="fast-access-child-menu-img" :src="item.img">
+          <div @mouseover="isShowTooltip('refFastChildMenuName' + index)">
+            <el-tooltip :disabled="showTooltip" effect="light" :content="item.name" placement="top">
+              <div class="fast-access-child-menu-name">
+                <span :ref="'refFastChildMenuName' + index">{{ item.name }}</span>
+              </div>
+            </el-tooltip>
+          </div>
         </div>
       </div>
     </div>
@@ -54,6 +57,7 @@ export default {
   data() {
     // 这⾥存放数据
     return {
+      showTooltip: true, // 是否开启tooltip功能
       isExpand: this.expand // 默认展开
     }
   },
@@ -85,6 +89,17 @@ export default {
   errorCaptured() { },
   // ⽅法集合
   methods: {
+    // 是否开启tooltip功能
+    isShowTooltip(refName) {
+      var parentWidth = this.$refs[refName][0].parentNode.offsetWidth
+      var contentWidth = this.$refs[refName][0].offsetWidth
+      // 判断是否开启tooltip功能
+      if (contentWidth > parentWidth) {
+        this.showTooltip = false
+      } else {
+        this.showTooltip = true
+      }
+    },
     // 快捷访问点击快速访问
     fastAccess(data) {
       this.$emit('fastAccess', data)
@@ -101,7 +116,7 @@ export default {
 .fast-access-menu-wrapper::before {
   content: '';
   position: absolute;
-  width: 140px;
+  width: 120px;
   height: 1px;
   border-top: 1px solid #DCDFE6;
   margin-left: 10px;
@@ -111,7 +126,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 160px;
+  width: 140px;
   height: 40px;
   border-radius: 15px;
   cursor: pointer;
@@ -132,7 +147,7 @@ export default {
 
 .fast-access-child-menu {
   display: flex;
-  width: 160px;
+  width: 140px;
   height: 40px;
   border-radius: 15px;
   cursor: pointer;
@@ -147,7 +162,7 @@ export default {
 .fast-access-child-menu-item {
   display: flex;
   align-items: center;
-  margin-left: 55px;
+  padding-left: 45px;
 }
 
 .fast-access-child-menu-img {
@@ -156,7 +171,7 @@ export default {
 }
 
 .fast-access-child-menu-name {
-  width: 80px;
+  width: 75px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
