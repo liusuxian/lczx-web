@@ -113,6 +113,11 @@ export default {
 </script>
 
 <style lang='scss' scoped>
+.fast-access-menu-wrapper {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .fast-access-menu-wrapper::before {
   content: '';
   position: absolute;

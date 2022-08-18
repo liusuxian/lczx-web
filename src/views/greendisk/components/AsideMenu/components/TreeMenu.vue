@@ -11,10 +11,13 @@
               :class="item.expand ? 'el-icon-caret-bottom' : 'el-icon-caret-right'"
               @click.stop="item.expand = !item.expand"
             />
-            <el-tooltip v-if="item.name.length > 4" effect="light" :content="item.name" placement="right">
-              <span>{{ item.name }}</span>
-            </el-tooltip>
-            <span v-else>{{ item.name }}</span>
+            <div @mouseover="isShowTooltip('refTreeMultiParentName' + index)">
+              <el-tooltip :disabled="showTooltip" effect="light" :content="item.name" placement="top">
+                <div class="tree-multi-parent-menu-name">
+                  <span :ref="'refTreeMultiParentName' + index">{{ item.name }}</span>
+                </div>
+              </el-tooltip>
+            </div>
           </div>
         </div>
         <!-- 多级菜单子菜单区域 -->
@@ -27,10 +30,13 @@
         >
           <div class="tree-multi-child-menu">
             <i :class="subitem.icon" class="tree-multi-child-menu-icon" />
-            <el-tooltip v-if="subitem.name.length > 4" effect="light" :content="subitem.name" placement="right">
-              <span>{{ subitem.name }}</span>
-            </el-tooltip>
-            <span v-else>{{ subitem.name }}</span>
+            <div @mouseover="isShowTooltip('refTreeMultiChildName' + subindex)">
+              <el-tooltip :disabled="showTooltip" effect="light" :content="subitem.name" placement="top">
+                <div class="tree-multi-child-menu-name">
+                  <span :ref="'refTreeMultiChildName' + subindex">{{ subitem.name }}</span>
+                </div>
+              </el-tooltip>
+            </div>
           </div>
         </div>
       </div>
@@ -39,7 +45,13 @@
         <div :class="getTreeMenuClass(item)" @click="treeMenuClick(item)">
           <div class="tree-single-menu">
             <i :class="item.icon" class="tree-single-menu-icon" />
-            <span>{{ item.name }}</span>
+            <div @mouseover="isShowTooltip('refTreeSingleName' + index)">
+              <el-tooltip :disabled="showTooltip" effect="light" :content="item.name" placement="top">
+                <div class="tree-single-menu-name">
+                  <span :ref="'refTreeSingleName' + index">{{ item.name }}</span>
+                </div>
+              </el-tooltip>
+            </div>
           </div>
         </div>
       </div>
@@ -64,6 +76,7 @@ export default {
   data() {
     // 这⾥存放数据
     return {
+      showTooltip: true, // 是否开启tooltip功能
       curMenuId: 0 // 当前被选中的菜单id
     }
   },
@@ -97,6 +110,17 @@ export default {
   errorCaptured() { },
   // ⽅法集合
   methods: {
+    // 是否开启tooltip功能
+    isShowTooltip(refName) {
+      var parentWidth = this.$refs[refName][0].parentNode.offsetWidth
+      var contentWidth = this.$refs[refName][0].offsetWidth
+      // 判断是否开启tooltip功能
+      if (contentWidth > parentWidth) {
+        this.showTooltip = false
+      } else {
+        this.showTooltip = true
+      }
+    },
     // 获取菜单树菜单绑定的class
     getTreeMenuClass(item) {
       return {
@@ -118,11 +142,16 @@ export default {
 </script>
 
 <style lang='scss' scoped>
+.tree-menu-wrapper {
+  padding-left: 10px;
+  padding-right: 10px;
+}
+
 .tree-menu {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 160px;
+  width: 140px;
   height: 40px;
   border-radius: 15px;
   cursor: pointer;
@@ -139,7 +168,7 @@ export default {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 160px;
+  width: 140px;
   height: 40px;
   border-radius: 15px;
   cursor: pointer;
@@ -157,14 +186,19 @@ export default {
 .tree-menu-line::before {
   content: '';
   position: absolute;
-  width: 140px;
+  width: 120px;
   height: 1px;
   border-top: 1px solid #DCDFE6;
   margin-bottom: 40px;
 }
 
 .tree-multi-parent-menu {
+  display: flex;
   width: 80px;
+}
+
+.tree-multi-parent-menu-name {
+  width: 58px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -183,9 +217,14 @@ export default {
 }
 
 .tree-multi-child-menu {
+  display: flex;
   width: 80px;
   margin-left: 40px;
   font-weight: normal;
+}
+
+.tree-multi-child-menu-name {
+  width: 58px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -196,8 +235,13 @@ export default {
 }
 
 .tree-single-menu {
+  display: flex;
   width: 80px;
   margin-left: 6px;
+}
+
+.tree-single-menu-name {
+  width: 58px;
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
