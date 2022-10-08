@@ -1,277 +1,191 @@
 <template>
-  <el-container>
-    <el-aside>
-      <!-- 侧边栏区域 -->
-      <el-card shadow="hover">
-        <div class="green-aside">
-          <el-tree
-            ref="fileTree"
-            :data="fileTreeData"
-            :props="defaultProps"
-            node-key="id"
-            highlight-current
-            default-expand-all
-            :expand-on-click-node="false"
-            :indent="10"
-            @node-click="handleNodeClick"
-          />
+  <div id="green-disk" class="app-container">
+    <!-- 侧边栏区域 -->
+    <AsideMenu ref="asideMenuRef" @treeMenuClick="treeMenuClick" @fastAccess="fastAccess" />
+    <div style="width: 100%;" @contextmenu="onContextMenu(null, null, $event)">
+      <!-- 操作按钮区域 -->
+      <div class="operation-menu-wrapper">
+        <div>
+          <el-button-group>
+            <el-button type="primary" size="small" icon="el-icon-upload">上传</el-button>
+            <el-button type="primary" size="small" icon="el-icon-plus" @click.stop="handleCreateFolder">
+              新建文件夹
+            </el-button>
+            <el-button type="primary" size="small" icon="el-icon-rank" :disabled="disabled">移动</el-button>
+            <el-button type="primary" size="small" icon="el-icon-download" :disabled="disabled">下载</el-button>
+            <el-button type="danger" size="small" icon="el-icon-delete" :disabled="disabled">删除</el-button>
+          </el-button-group>
         </div>
-      </el-card>
-    </el-aside>
-    <el-main>
-      <el-card shadow="hover">
-        <div id="green-disk">
-          <div style="width: 100%;" @contextmenu="onContextMenu(null, null, $event)">
-            <!-- 操作按钮区域 -->
-            <div class="operation-menu-wrapper">
-              <div>
-                <el-button class="operation-btn-upload" round size="small" icon="el-icon-upload2">
-                  上传
-                </el-button>
-                <el-button
-                  class="operation-btn"
-                  round
-                  size="small"
-                  icon="el-icon-folder-add"
-                  @click.stop="handleCreateFolder"
-                >
-                  新建文件夹
-                </el-button>
-                <el-button v-show="isBtnShow" disabled class="operation-btn" round size="small">
-                  分享
-                </el-button>
-                <el-button v-show="isBtnShow" class="operation-btn" round size="small">
-                  下载
-                </el-button>
-                <el-dropdown v-show="isBtnShow" trigger="click" style="margin-left: 10px;">
-                  <el-button class="operation-btn" round size="small">
-                    更多<i class="el-icon-arrow-down el-icon--right" />
-                  </el-button>
-                  <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item disabled>移动到</el-dropdown-item>
-                    <el-dropdown-item disabled>复制到</el-dropdown-item>
-                    <el-dropdown-item>删除</el-dropdown-item>
-                  </el-dropdown-menu>
-                </el-dropdown>
-              </div>
-              <div style="display: flex;">
-                <div style="margin-right: 10px;">
-                  <el-input
-                    v-model="fileInfo.name"
-                    placeholder="搜索您的文件"
-                    type="text"
-                    size="small"
-                    maxlength="255"
-                    clearable
-                  >
-                    <el-button slot="append" icon="el-icon-search">搜索</el-button>
-                  </el-input>
-                </div>
-                <div style="margin-right: 10px;">
-                  <el-radio-group v-model="showType" size="small">
-                    <el-radio-button label="list"><i class="el-icon-tickets" />列表</el-radio-button>
-                    <el-radio-button label="grid"><i class="el-icon-s-grid" />网格</el-radio-button>
-                  </el-radio-group>
-                </div>
-                <div style="margin-right: 20px;">
-                  <el-button size="small" icon="el-icon-refresh-right" />
-                </div>
-              </div>
-            </div>
-            <!-- 当前位置区域 -->
-            <div class="breadcrumb-wrapper">
-              <div style="display: flex; align-items: center;">
-                <span class="breadcrumb-title">当前位置：</span>
-                <el-breadcrumb separator="/">
-                  <el-breadcrumb-item v-for="(item, index) in pathList" :key="index" :to="{ query: { pid: item.id } }">
-                    {{ item.name }}
-                  </el-breadcrumb-item>
-                </el-breadcrumb>
-              </div>
-              <span v-show="multipleSelection.length > 0 || fileGridSelectList.length > 0" class="file-select-tips">
-                已选中{{ multipleSelection.length || fileGridSelectList.length }}个文件/文件夹
-              </span>
-            </div>
-            <!-- 列表展示区域 -->
-            <div v-show="showType === 'list'" class="file-list-wrapper">
-              <el-table
-                id="file-list-table"
-                ref="fileListTable"
-                height="calc(100% - 10px)"
-                tooltip-effect="light"
-                :data="fileList"
-                :row-style="tableRowStyle"
-                :header-cell-style="tableHeaderCellStyle"
-                :default-sort="{ prop: 'updatedAt', order: 'descending' }"
-                @selection-change="handleSelectionChange"
-                @row-contextmenu="onContextMenu"
-              >
-                <el-table-column align="center" type="selection" width="50" />
-                <el-table-column
-                  align="left"
-                  prop="name"
-                  label="文件名"
-                  sortable
-                  :show-overflow-tooltip="true"
-                  width="300"
-                >
-                  <template slot-scope="scope">
-                    <div class="file-list-item">
-                      <el-image class="file-list-img" :src="getFileImg(scope.row.type)" fit="cover" />
-                      <div v-if="scope.row.id !== curRenameFile.id" class="file-list-name">{{ scope.row.name }}</div>
-                      <input
-                        v-else
-                        v-model="scope.row.name"
-                        v-input-focus
-                        class="file-list-name"
-                        :class="{ 'file-list-name-select-input': isFileListSelect(scope.row) }"
-                        type="text"
-                        @focus.stop="$event.target.select()"
-                        @click.stop="$event.target.select()"
-                        @keyup.enter.stop="handleSubmitRename(scope.row, $event)"
-                        @blur.stop="handleSubmitRename(scope.row, $event)"
-                      >
-                    </div>
-                  </template>
-                </el-table-column>
-                <el-table-column align="center" prop="size" label="大小" sortable width="160">
-                  <template slot-scope="scope">
-                    {{ fileSizeFormat(scope.row.size) }}
-                  </template>
-                </el-table-column>
-                <el-table-column align="center" prop="type" label="类型" sortable width="160">
-                  <template slot-scope="scope">
-                    {{ getFileType(scope.row.type) }}
-                  </template>
-                </el-table-column>
-                <el-table-column align="center" prop="updatedAt" label="修改时间" sortable width="200">
-                  <template slot-scope="scope">
-                    {{ scope.row.updatedAt }}
-                  </template>
-                </el-table-column>
-                <el-table-column align="center" label="备注">
-                  <template slot-scope="scope">
-                    {{ scope.row.remark }}
-                  </template>
-                </el-table-column>
-              </el-table>
-            </div>
-            <!-- 网格展示区域 -->
-            <div v-show="showType === 'grid'" class="file-grid-wrapper">
-              <el-checkbox v-model="selectAllFile" style="margin-left: 20px;" @change="handleCheckChange">
-                全部文件
-              </el-checkbox>
-              <vue-drag-select
-                ref="dragSelect"
-                v-model="fileGridSelectList"
-                value-key="id"
-                :item-width="120"
-                :item-height="130"
-                :item-margin="[0, 0, 0, 0]"
-              >
-                <template v-for="(item, index) in fileList">
-                  <drag-select-option :key="item.id" :value="item" :item-index="index">
-                    <div
-                      :class="isFileGridSelect(item) ? 'file-grid-item-select' : 'file-grid-item'"
-                      @contextmenu="onContextMenu(item, null, $event)"
-                    >
-                      <div
-                        class="file-grid-img-border"
-                        :class="{ 'file-grid-img-border-select': isFileGridSelect(item) }"
-                      >
-                        <el-image class="file-grid-img" :src="getFileImg(item.type)" fit="cover" />
-                      </div>
-                      <div
-                        v-if="item.id !== curRenameFile.id"
-                        class="file-grid-name"
-                        :class="{ 'file-grid-name-select': isFileGridSelect(item) }"
-                      >
-                        {{ item.name }}
-                      </div>
-                      <input
-                        v-else
-                        v-model="item.name"
-                        v-input-focus
-                        class="file-grid-name"
-                        :class="{ 'file-grid-name-select-input': isFileGridSelect(item) }"
-                        type="text"
-                        @focus.stop="$event.target.select()"
-                        @click.stop="$event.target.select()"
-                        @keyup.enter.stop="handleSubmitRename(item, $event)"
-                        @blur.stop="handleSubmitRename(item, $event)"
-                      >
-                    </div>
-                  </drag-select-option>
-                </template>
-              </vue-drag-select>
-            </div>
-            <!-- 底部分页栏区域 -->
-            <div class="bottom-pagination-wrapper">
-              <el-pagination
-                :current-page="fileInfo.curPage"
-                :page-sizes="[10, 20, 30, 40, 50]"
-                :page-size="fileInfo.pageSize"
-                :disabled="fileInfo.total <= fileInfo.pageSize"
-                layout="total, sizes, prev, pager, next, jumper"
-                :total="fileInfo.total"
-                @size-change="handleSizeChange"
-                @current-change="handleCurChange"
-              />
-            </div>
+        <div style="display: flex;">
+          <div style="margin-right: 10px;">
+            <el-input v-model="fileInfo.name" placeholder="搜索您的文件" type="text" size="small" maxlength="255" clearable>
+              <el-button slot="append" icon="el-icon-search">搜索</el-button>
+            </el-input>
+          </div>
+          <div style="margin-right: 10px;">
+            <el-radio-group v-model="showType" size="small">
+              <el-radio-button label="list"><i class="el-icon-tickets" />列表</el-radio-button>
+              <el-radio-button label="grid"><i class="el-icon-s-grid" />网格</el-radio-button>
+            </el-radio-group>
+          </div>
+          <div style="margin-right: 20px;">
+            <el-button size="small" icon="el-icon-refresh-right" />
           </div>
         </div>
-      </el-card>
-    </el-main>
-  </el-container>
+      </div>
+      <!-- 当前位置区域 -->
+      <div class="breadcrumb-wrapper">
+        <div style="display: flex; align-items: center;">
+          <span class="breadcrumb-title">当前位置：</span>
+          <el-breadcrumb separator="/">
+            <el-breadcrumb-item v-for="(item, index) in pathList" :key="index" :to="{ query: { pid: item.id } }">
+              {{ item.name }}
+            </el-breadcrumb-item>
+          </el-breadcrumb>
+        </div>
+        <span v-show="multipleSelection.length > 0 || fileGridSelectList.length > 0" class="file-select-tips">
+          已选中{{ multipleSelection.length || fileGridSelectList.length }}个文件/文件夹
+        </span>
+      </div>
+      <!-- 列表展示区域 -->
+      <div v-show="showType === 'list'" class="file-list-wrapper">
+        <el-table
+          id="file-list-table"
+          ref="fileListTable"
+          height="calc(100% - 10px)"
+          tooltip-effect="light"
+          :data="fileList"
+          :row-style="tableRowStyle"
+          :header-cell-style="tableHeaderCellStyle"
+          :default-sort="{ prop: 'updatedAt', order: 'descending' }"
+          @selection-change="handleSelectionChange"
+          @row-contextmenu="onContextMenu"
+        >
+          <el-table-column align="center" type="selection" width="50" />
+          <el-table-column align="left" prop="name" label="文件名" sortable :show-overflow-tooltip="true" width="300">
+            <template slot-scope="scope">
+              <div class="file-list-item">
+                <el-image class="file-list-img" :src="getFileImg(scope.row.type)" fit="cover" />
+                <div v-if="scope.row.id !== curRenameFile.id" class="file-list-name">{{ scope.row.name }}</div>
+                <input
+                  v-else
+                  v-model="scope.row.name"
+                  v-input-focus
+                  class="file-list-name"
+                  :class="{ 'file-list-name-select-input': isFileListSelect(scope.row) }"
+                  type="text"
+                  @focus.stop="$event.target.select()"
+                  @click.stop="$event.target.select()"
+                  @keyup.enter.stop="handleSubmitRename(scope.row, $event)"
+                  @blur.stop="handleSubmitRename(scope.row, $event)"
+                >
+              </div>
+            </template>
+          </el-table-column>
+          <el-table-column align="center" prop="size" label="大小" sortable width="160">
+            <template slot-scope="scope">
+              {{ fileSizeFormat(scope.row.size) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="center" prop="type" label="类型" sortable width="160">
+            <template slot-scope="scope">
+              {{ getFileType(scope.row.type) }}
+            </template>
+          </el-table-column>
+          <el-table-column align="center" prop="updatedAt" label="修改时间" sortable width="200">
+            <template slot-scope="scope">
+              {{ scope.row.updatedAt }}
+            </template>
+          </el-table-column>
+          <el-table-column align="center" label="备注">
+            <template slot-scope="scope">
+              {{ scope.row.remark }}
+            </template>
+          </el-table-column>
+        </el-table>
+      </div>
+      <!-- 网格展示区域 -->
+      <div v-show="showType === 'grid'" class="file-grid-wrapper">
+        <el-checkbox v-model="selectAllFile" style="margin-left: 20px;" @change="handleCheckChange">
+          全部文件
+        </el-checkbox>
+        <vue-drag-select
+          ref="dragSelect"
+          v-model="fileGridSelectList"
+          value-key="id"
+          :item-width="120"
+          :item-height="130"
+          :item-margin="[0, 0, 0, 0]"
+        >
+          <template v-for="(item, index) in fileList">
+            <drag-select-option :key="item.id" :value="item" :item-index="index">
+              <div
+                :class="isFileGridSelect(item) ? 'file-grid-item-select' : 'file-grid-item'"
+                @contextmenu="onContextMenu(item, null, $event)"
+              >
+                <div class="file-grid-img-border" :class="{ 'file-grid-img-border-select': isFileGridSelect(item) }">
+                  <el-image class="file-grid-img" :src="getFileImg(item.type)" fit="cover" />
+                </div>
+                <div
+                  v-if="item.id !== curRenameFile.id"
+                  class="file-grid-name"
+                  :class="{ 'file-grid-name-select': isFileGridSelect(item) }"
+                >
+                  {{ item.name }}
+                </div>
+                <input
+                  v-else
+                  v-model="item.name"
+                  v-input-focus
+                  class="file-grid-name"
+                  :class="{ 'file-grid-name-select-input': isFileGridSelect(item) }"
+                  type="text"
+                  @focus.stop="$event.target.select()"
+                  @click.stop="$event.target.select()"
+                  @keyup.enter.stop="handleSubmitRename(item, $event)"
+                  @blur.stop="handleSubmitRename(item, $event)"
+                >
+              </div>
+            </drag-select-option>
+          </template>
+        </vue-drag-select>
+      </div>
+      <!-- 底部分页栏区域 -->
+      <div class="bottom-pagination-wrapper">
+        <el-pagination
+          :current-page="fileInfo.curPage"
+          :page-sizes="[10, 20, 30, 40, 50]"
+          :page-size="fileInfo.pageSize"
+          :disabled="fileInfo.total <= fileInfo.pageSize"
+          layout="total, sizes, prev, pager, next, jumper"
+          :total="fileInfo.total"
+          @size-change="handleSizeChange"
+          @current-change="handleCurChange"
+        />
+      </div>
+    </div>
+  </div>
 </template>
 
 <script>
 // 这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
 // 例如：import 《组件名称》 from '《组件路径》';
+import AsideMenu from './components/AsideMenu/AsideMenu'
 import {
   Loading
 } from 'element-ui'
 
 export default {
   // import引⼊的组件需要注⼊到对象中才能使⽤
-  components: {},
+  components: {
+    AsideMenu
+  },
   // 属性
   props: {},
   // 数据
   data() {
     // 这⾥存放数据
     return {
-      fileTreeData: [
-        {
-          id: 1,
-          label: '所有文件',
-          children: [
-            {
-              id: 2,
-              label: '咨询公司',
-              children: [{
-                id: 3,
-                label: '测试文件夹111111',
-                children: []
-              }]
-            },
-            {
-              id: 4,
-              label: '联盟公司',
-              children: []
-            },
-            {
-              id: 5,
-              label: '未来社区公司',
-              children: []
-            }
-          ]
-        }
-      ], // 文件输数据
-      defaultProps: {
-        children: 'children',
-        label: 'label'
-      },
       showType: 'list', // 展现形式
       selectAllFile: false, // 是否选择全部文件
       pathList: [
@@ -347,7 +261,7 @@ export default {
         }
       ], // 文件列表
       multipleSelection: [],
-      isBtnShow: false, // 按钮是否显示
+      disabled: true, // 按钮禁用状态
       fileInfo: {
         name: '', // 搜索文件或文件夹名称
         curPage: 1,
@@ -369,13 +283,8 @@ export default {
     // 监控文件网格被选中列表
     fileGridSelectList: {
       handler(newVal, oldVal) {
-        if (newVal.length === 0) {
-          if (this.selectAllFile) {
-            this.selectAllFile = false
-          }
-          this.isBtnShow = false
-        } else {
-          this.isBtnShow = true
+        if (newVal.length === 0 && this.selectAllFile) {
+          this.selectAllFile = false
         }
       },
       immediate: true
@@ -389,7 +298,6 @@ export default {
   beforeMount() { },
   // 实例被挂载后调用（可以访问DOM元素）
   mounted() {
-    this.$refs.fileTree.setCurrentKey(1)
     this.pageDom = document.getElementById('green-disk')
   },
   // 在数据发生改变后，DOM被更新之前被调用
@@ -416,9 +324,9 @@ export default {
     handleSelectionChange(val) {
       this.multipleSelection = val
       if (val.length > 0) {
-        this.isBtnShow = true
+        this.disabled = false
       } else {
-        this.isBtnShow = false
+        this.disabled = true
       }
     },
     // 选中复选框表格变色
@@ -481,10 +389,6 @@ export default {
     // 获取文件类型
     getFileType(type) {
       return '文件夹'
-    },
-    // 点击文件树节点
-    handleNodeClick(data) {
-      console.log('handleNodeClick: ', data)
     },
     // 右键菜单
     onContextMenu(rowOrItem, column, event) {
@@ -554,14 +458,12 @@ export default {
           },
           {
             label: '移动到',
-            disabled: true,
             onClick: () => {
               console.log('移动到: ', rowOrItem)
             }
           },
           {
             label: '复制到',
-            disabled: true,
             divided: true,
             onClick: () => {
               console.log('复制到: ', rowOrItem)
@@ -589,7 +491,6 @@ export default {
             },
             {
               label: '添加快捷访问',
-              disabled: true,
               onClick: () => {
                 this.addFastItems(curSelectList)
               }
@@ -665,6 +566,10 @@ export default {
     // 添加快捷访问项
     addFastItems(dataList) {
       this.$refs.asideMenuRef.addFastItems(dataList)
+    },
+    // 点击菜单树菜单
+    treeMenuClick(data) {
+      console.log('treeMenuClick: ', data)
     },
     // 快捷访问点击快速访问
     fastAccess(data) {
@@ -779,21 +684,12 @@ export default {
 }
 </style>
 <style lang='scss' scoped>
-#green-disk {
+.app-container {
   display: flex;
-}
 
-.el-aside {
-  background-color: #FFFFFF;
-  padding: 20px 0 20px 20px;
-}
-
-.green-aside {
-  width: 238px;
-}
-
-.el-main {
-  background-color: #FFFFFF;
+  .permission-tree {
+    margin-bottom: 30px;
+  }
 }
 
 .operation-menu-wrapper {
@@ -863,58 +759,6 @@ export default {
 }
 
 ::v-deep {
-  .el-tree-node__expand-icon.expanded {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-
-  // 没有展开且有子节点
-  .el-icon-caret-right:before {
-    background: url("~@/assets/images/file/folder.png") no-repeat 0 3px;
-    content: '';
-    display: block;
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-    background-size: 16px;
-  }
-
-  // 已经展开且有子节点
-  .el-tree-node__expand-icon.expanded.el-icon-caret-right:before {
-    background: url("~@/assets/images/file/folderOpen.png") no-repeat 0 3px;
-    content: '';
-    display: block;
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-    background-size: 16px;
-  }
-
-  // 没有子节点
-  .el-tree-node__expand-icon.is-leaf::before {
-    background: url("~@/assets/images/file/folderOpen.png") no-repeat 0 3px;
-    content: '';
-    display: block;
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-    background-size: 16px;
-  }
-
-  // 选中行高亮显示
-  .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-    color: #1FA9FC;
-    background-color: #EFF9FE;
-  }
-
-  .operation-btn-upload i {
-    font-weight: bold;
-  }
-
-  .operation-btn i {
-    font-weight: bold;
-  }
-
   .select-wrapper {
     height: calc(100vh - 269px);
   }

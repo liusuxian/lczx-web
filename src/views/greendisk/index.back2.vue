@@ -1,61 +1,45 @@
 <template>
   <el-container>
-    <el-aside>
-      <!-- 侧边栏区域 -->
-      <el-card shadow="hover">
-        <div class="green-aside">
-          <el-tree
-            ref="fileTree"
-            :data="fileTreeData"
-            :props="defaultProps"
-            node-key="id"
-            highlight-current
-            default-expand-all
-            :expand-on-click-node="false"
-            :indent="10"
-            @node-click="handleNodeClick"
-          />
-        </div>
-      </el-card>
-    </el-aside>
     <el-main>
       <el-card shadow="hover">
         <div id="green-disk">
+          <!-- 侧边栏区域 -->
+          <AsideMenu ref="asideMenuRef" @treeMenuClick="treeMenuClick" @fastAccess="fastAccess" />
           <div style="width: 100%;" @contextmenu="onContextMenu(null, null, $event)">
             <!-- 操作按钮区域 -->
             <div class="operation-menu-wrapper">
-              <div>
-                <el-button class="operation-btn-upload" round size="small" icon="el-icon-upload2">
-                  上传
-                </el-button>
-                <el-button
-                  class="operation-btn"
-                  round
-                  size="small"
-                  icon="el-icon-folder-add"
-                  @click.stop="handleCreateFolder"
-                >
-                  新建文件夹
-                </el-button>
-                <el-button v-show="isBtnShow" disabled class="operation-btn" round size="small">
-                  分享
-                </el-button>
-                <el-button v-show="isBtnShow" class="operation-btn" round size="small">
-                  下载
-                </el-button>
-                <el-dropdown v-show="isBtnShow" trigger="click" style="margin-left: 10px;">
-                  <el-button class="operation-btn" round size="small">
-                    更多<i class="el-icon-arrow-down el-icon--right" />
+              <el-row>
+                <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
+                  <el-button class="operation-btn-upload" round size="small" icon="el-icon-upload2">
+                    上传
                   </el-button>
-                  <el-dropdown-menu slot="dropdown">
-                    <el-dropdown-item disabled>移动到</el-dropdown-item>
-                    <el-dropdown-item disabled>复制到</el-dropdown-item>
-                    <el-dropdown-item>删除</el-dropdown-item>
-                  </el-dropdown-menu>
-                </el-dropdown>
-              </div>
-              <div style="display: flex;">
-                <div style="margin-right: 10px;">
+                  <el-button
+                    class="operation-btn"
+                    round
+                    size="small"
+                    icon="el-icon-folder-add"
+                    @click.stop="handleCreateFolder"
+                  >
+                    新建文件夹
+                  </el-button>
+                  <el-button v-show="isBtnShow" class="operation-btn" round size="small">
+                    分享
+                  </el-button>
+                  <el-button v-show="isBtnShow" class="operation-btn" round size="small">
+                    下载
+                  </el-button>
+                  <el-dropdown v-show="isBtnShow" trigger="click" style="margin-left: 10px;">
+                    <el-button class="operation-btn" round size="small">
+                      更多<i class="el-icon-arrow-down el-icon--right" />
+                    </el-button>
+                    <el-dropdown-menu slot="dropdown">
+                      <el-dropdown-item>移动到</el-dropdown-item>
+                      <el-dropdown-item>复制到</el-dropdown-item>
+                      <el-dropdown-item>删除</el-dropdown-item>
+                    </el-dropdown-menu>
+                  </el-dropdown>
+                </el-col>
+                <el-col :xs="24" :sm="12" :md="8" :lg="6" :xl="4">
                   <el-input
                     v-model="fileInfo.name"
                     placeholder="搜索您的文件"
@@ -66,17 +50,8 @@
                   >
                     <el-button slot="append" icon="el-icon-search">搜索</el-button>
                   </el-input>
-                </div>
-                <div style="margin-right: 10px;">
-                  <el-radio-group v-model="showType" size="small">
-                    <el-radio-button label="list"><i class="el-icon-tickets" />列表</el-radio-button>
-                    <el-radio-button label="grid"><i class="el-icon-s-grid" />网格</el-radio-button>
-                  </el-radio-group>
-                </div>
-                <div style="margin-right: 20px;">
-                  <el-button size="small" icon="el-icon-refresh-right" />
-                </div>
-              </div>
+                </el-col>
+              </el-row>
             </div>
             <!-- 当前位置区域 -->
             <div class="breadcrumb-wrapper">
@@ -228,50 +203,22 @@
 <script>
 // 这里可以导入其他文件（比如：组件，工具js，第三方插件js，json文件，图片文件等等）
 // 例如：import 《组件名称》 from '《组件路径》';
+import AsideMenu from './components/AsideMenu/AsideMenu'
 import {
   Loading
 } from 'element-ui'
 
 export default {
   // import引⼊的组件需要注⼊到对象中才能使⽤
-  components: {},
+  components: {
+    AsideMenu
+  },
   // 属性
   props: {},
   // 数据
   data() {
     // 这⾥存放数据
     return {
-      fileTreeData: [
-        {
-          id: 1,
-          label: '所有文件',
-          children: [
-            {
-              id: 2,
-              label: '咨询公司',
-              children: [{
-                id: 3,
-                label: '测试文件夹111111',
-                children: []
-              }]
-            },
-            {
-              id: 4,
-              label: '联盟公司',
-              children: []
-            },
-            {
-              id: 5,
-              label: '未来社区公司',
-              children: []
-            }
-          ]
-        }
-      ], // 文件输数据
-      defaultProps: {
-        children: 'children',
-        label: 'label'
-      },
       showType: 'list', // 展现形式
       selectAllFile: false, // 是否选择全部文件
       pathList: [
@@ -369,13 +316,8 @@ export default {
     // 监控文件网格被选中列表
     fileGridSelectList: {
       handler(newVal, oldVal) {
-        if (newVal.length === 0) {
-          if (this.selectAllFile) {
-            this.selectAllFile = false
-          }
-          this.isBtnShow = false
-        } else {
-          this.isBtnShow = true
+        if (newVal.length === 0 && this.selectAllFile) {
+          this.selectAllFile = false
         }
       },
       immediate: true
@@ -389,7 +331,6 @@ export default {
   beforeMount() { },
   // 实例被挂载后调用（可以访问DOM元素）
   mounted() {
-    this.$refs.fileTree.setCurrentKey(1)
     this.pageDom = document.getElementById('green-disk')
   },
   // 在数据发生改变后，DOM被更新之前被调用
@@ -482,10 +423,6 @@ export default {
     getFileType(type) {
       return '文件夹'
     },
-    // 点击文件树节点
-    handleNodeClick(data) {
-      console.log('handleNodeClick: ', data)
-    },
     // 右键菜单
     onContextMenu(rowOrItem, column, event) {
       event.preventDefault() // 不能阻止冒泡，但是可以阻止默认事件
@@ -554,14 +491,12 @@ export default {
           },
           {
             label: '移动到',
-            disabled: true,
             onClick: () => {
               console.log('移动到: ', rowOrItem)
             }
           },
           {
             label: '复制到',
-            disabled: true,
             divided: true,
             onClick: () => {
               console.log('复制到: ', rowOrItem)
@@ -589,7 +524,6 @@ export default {
             },
             {
               label: '添加快捷访问',
-              disabled: true,
               onClick: () => {
                 this.addFastItems(curSelectList)
               }
@@ -622,7 +556,7 @@ export default {
       this.$contextmenu({
         items: items,
         event,
-        customClass: 'context-menu-custom-class',
+        customClass: 'green-disk-context-menu-custom-class',
         zIndex: 3,
         minWidth: 100
       })
@@ -665,6 +599,10 @@ export default {
     // 添加快捷访问项
     addFastItems(dataList) {
       this.$refs.asideMenuRef.addFastItems(dataList)
+    },
+    // 点击菜单树菜单
+    treeMenuClick(data) {
+      console.log('treeMenuClick: ', data)
     },
     // 快捷访问点击快速访问
     fastAccess(data) {
@@ -718,7 +656,7 @@ export default {
           this.$nextTick(() => {
             loading.close()
           })
-        }, 5000)
+        }, 1000)
       }
       // 重置
       this.curRenameFile.id = -1
@@ -729,51 +667,9 @@ export default {
 </script>
 
 <style lang='scss'>
-// 去掉表格单元格边框
-#file-list-table th {
-  border: none;
-}
-
-#file-list-table td,
-#file-list-table th.is-leaf {
-  border: none;
-}
-
-// 表格最外边框
-.el-table--border,
-.el-table--group {
-  border: none;
-}
-
-// 表格最外层边框-底部边框
-.el-table--border::after,
-.el-table--group::after {
-  width: 0;
-}
-
-#file-list-table::before {
-  width: 0;
-}
-
-#file-list-table .el-table__fixed-right::before,
-.el-table__fixed::before {
-  width: 0;
-}
-
-// 表格有滚动时表格头边框
-.el-table--border th.gutter:last-of-type {
-  border: 1px solid #EBEEF5;
-  border-left: none;
-}
-
-// 选中行鼠标hover效果
-.file-list-table-row:hover>td {
-  background-color: rgba(0, 0, 0, 0) !important;
-}
-
 // 右键菜单样式
-.context-menu-custom-class .menu_item__available:hover,
-.context-menu-custom-class .menu_item_expand {
+.green-disk-context-menu-custom-class .menu_item__available:hover,
+.green-disk-context-menu-custom-class .menu_item_expand {
   color: white !important;
   background-color: #1FA9FC !important;
 }
@@ -783,24 +679,96 @@ export default {
   display: flex;
 }
 
-.el-aside {
-  background-color: #FFFFFF;
-  padding: 20px 0 20px 20px;
-}
+::v-deep {
+  .el-col {
+    border: 1px solid #DCDFE6;
+  }
 
-.green-aside {
-  width: 238px;
-}
+  .operation-btn-upload i {
+    font-weight: bold;
+  }
 
-.el-main {
-  background-color: #FFFFFF;
+  .operation-btn i {
+    font-weight: bold;
+  }
+
+  .select-wrapper {
+    height: calc(100vh - 269px);
+  }
+
+  // 去掉表格单元格边框
+  #file-list-table th {
+    border: none;
+  }
+
+  #file-list-table td,
+  #file-list-table th.is-leaf {
+    border: none;
+  }
+
+  // 表格最外边框
+  .el-table--border,
+  .el-table--group {
+    border: none;
+  }
+
+  // 表格最外层边框-底部边框
+  .el-table--border::after,
+  .el-table--group::after {
+    width: 0;
+  }
+
+  #file-list-table::before {
+    width: 0;
+  }
+
+  #file-list-table .el-table__fixed-right::before,
+  .el-table__fixed::before {
+    width: 0;
+  }
+
+  // 表格有滚动时表格头边框
+  .el-table--border th.gutter:last-of-type {
+    border: 1px solid #EBEEF5;
+    border-left: none;
+  }
+
+  // 选中行鼠标hover效果
+  .file-list-table-row:hover>td {
+    background-color: rgba(0, 0, 0, 0) !important;
+  }
 }
 
 .operation-menu-wrapper {
-  display: flex;
-  justify-content: space-between;
-  margin-left: 20px;
-  margin-bottom: 20px;
+  // display: flex;
+  // justify-content: space-between;
+  padding-left: 20px;
+  padding-right: 20px;
+  padding-bottom: 20px;
+}
+
+.operation-btn-upload {
+  color: white;
+  border: 0;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #1FA9FC;
+}
+
+.operation-btn-upload:active {
+  background-color: #1A90D6;
+}
+
+.operation-btn {
+  color: #1FA9FC;
+  border: 0;
+  font-size: 14px;
+  font-weight: bold;
+  background-color: #EFF9FE;
+}
+
+.operation-btn:active {
+  background-color: #CDD5D9;
 }
 
 .breadcrumb-wrapper {
@@ -860,64 +828,6 @@ export default {
 .file-grid-wrapper {
   margin-top: 20px;
   margin-right: 40px;
-}
-
-::v-deep {
-  .el-tree-node__expand-icon.expanded {
-    -webkit-transform: rotate(0deg);
-    transform: rotate(0deg);
-  }
-
-  // 没有展开且有子节点
-  .el-icon-caret-right:before {
-    background: url("~@/assets/images/file/folder.png") no-repeat 0 3px;
-    content: '';
-    display: block;
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-    background-size: 16px;
-  }
-
-  // 已经展开且有子节点
-  .el-tree-node__expand-icon.expanded.el-icon-caret-right:before {
-    background: url("~@/assets/images/file/folderOpen.png") no-repeat 0 3px;
-    content: '';
-    display: block;
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-    background-size: 16px;
-  }
-
-  // 没有子节点
-  .el-tree-node__expand-icon.is-leaf::before {
-    background: url("~@/assets/images/file/folderOpen.png") no-repeat 0 3px;
-    content: '';
-    display: block;
-    width: 20px;
-    height: 20px;
-    font-size: 16px;
-    background-size: 16px;
-  }
-
-  // 选中行高亮显示
-  .el-tree--highlight-current .el-tree-node.is-current>.el-tree-node__content {
-    color: #1FA9FC;
-    background-color: #EFF9FE;
-  }
-
-  .operation-btn-upload i {
-    font-weight: bold;
-  }
-
-  .operation-btn i {
-    font-weight: bold;
-  }
-
-  .select-wrapper {
-    height: calc(100vh - 269px);
-  }
 }
 
 .file-grid-item {
